@@ -2,6 +2,7 @@
 /**
  * การตั้งค่าระบบหลัก
  * Smart Order Management System
+ * อัปเดตสำหรับ macOS XAMPP
  */
 
 // ป้องกันการเข้าถึงโดยตรง
@@ -9,7 +10,7 @@ if (!defined('SYSTEM_INIT')) {
     define('SYSTEM_INIT', true);
 }
 
-// ข้อมูลระบบ
+// ข้อมูลระบบ - อัปเดตให้เหมาะกับ environment
 define('SITE_URL', 'http://localhost/pos');
 define('SITE_NAME', 'ระบบจัดการออเดอร์อัจฉริยะ');
 define('SITE_DESCRIPTION', 'ระบบ POS และการจัดการออเดอร์แบบครบวงจร');
@@ -24,11 +25,12 @@ date_default_timezone_set(TIMEZONE);
 define('DEBUG_MODE', true);
 define('LOG_ERRORS', true);
 
-// การตั้งค่าไฟล์
+// การตั้งค่าไฟล์ - อัปเดตให้เหมาะกับ macOS
 define('MAX_FILE_SIZE', 5242880); // 5MB
 define('ALLOWED_IMAGE_TYPES', ['jpg', 'jpeg', 'png', 'gif']);
 define('UPLOAD_PATH', dirname(__DIR__) . '/uploads/');
 define('TEMP_PATH', dirname(__DIR__) . '/uploads/temp/');
+define('MENU_IMAGE_PATH', dirname(__DIR__) . '/uploads/menu_images/');
 
 // การตั้งค่าระบบ
 define('DEFAULT_LANGUAGE', 'th');
@@ -40,7 +42,7 @@ define('HASH_ALGO', 'sha256');
 define('SESSION_LIFETIME', 3600); // 1 ชั่วโมง
 define('CSRF_TOKEN_LENGTH', 32);
 
-// การตั้งค่ามุมมองเสีย
+// การตั้งค่าระบบเสียงและ AI
 define('VOICE_ENABLED', true);
 define('AI_ENABLED', true);
 
@@ -70,14 +72,15 @@ function createRequiredDirectories() {
     $directories = [
         UPLOAD_PATH,
         TEMP_PATH,
-        UPLOAD_PATH . 'menu_images/',
+        MENU_IMAGE_PATH,
         UPLOAD_PATH . 'receipts/',
         dirname(__DIR__) . '/logs/'
     ];
     
     foreach ($directories as $dir) {
         if (!is_dir($dir)) {
-            mkdir($dir, 0755, true);
+            @mkdir($dir, 0777, true); // เพิ่ม @ เพื่อป้องกัน warning
+            @chmod($dir, 0777); // ตั้งค่า permission สำหรับ macOS
         }
     }
 }
@@ -124,13 +127,14 @@ function sendJsonResponse($data, $httpCode = 200) {
     exit();
 }
 
-// ฟังก์ชันบันทึก Log
+// ฟังก์ชันบันทึก Log - ปรับปรุงสำหรับ macOS
 function writeLog($message, $level = 'INFO') {
     if (!LOG_ERRORS) return;
     
     $logDir = dirname(__DIR__) . '/logs/';
     if (!is_dir($logDir)) {
-        mkdir($logDir, 0755, true);
+        @mkdir($logDir, 0777, true);
+        @chmod($logDir, 0777);
     }
     
     $logFile = $logDir . 'system_' . date('Y-m-d') . '.log';
@@ -138,12 +142,23 @@ function writeLog($message, $level = 'INFO') {
     $ip = $_SERVER['REMOTE_ADDR'] ?? 'unknown';
     $user = 'guest';
     
-    if (function_exists('getCurrentUserId') && getCurrentUserId()) {
-        $user = 'user_' . getCurrentUserId();
+    // ตรวจสอบว่าฟังก์ชัน getCurrentUserId มีอยู่หรือไม่
+    if (function_exists('getCurrentUserId')) {
+        $userId = getCurrentUserId();
+        if ($userId) {
+            $user = 'user_' . $userId;
+        }
     }
     
     $logMessage = "[$timestamp] [$level] [$ip] [$user] $message" . PHP_EOL;
-    file_put_contents($logFile, $logMessage, FILE_APPEND | LOCK_EX);
+    
+    // ใช้ try-catch เพื่อป้องกันข้อผิดพลาดในการเขียน log
+    try {
+        @file_put_contents($logFile, $logMessage, FILE_APPEND | LOCK_EX);
+        @chmod($logFile, 0666);
+    } catch (Exception $e) {
+        // Silent fail สำหรับการเขียน log
+    }
 }
 
 // ฟังก์ชันสร้าง CSRF Token
@@ -181,6 +196,51 @@ function getLoginUrl() {
             return SITE_URL . '/kitchen/login.php';
         default:
             return SITE_URL . '/login.php';
+    }
+}
+
+// ฟังก์ชันสำหรับการจัดการสถานะออเดอร์
+function getOrderStatusText($status) {
+    $statusMap = [
+        'pending' => 'รอยืนยัน',
+        'confirmed' => 'ยืนยันแล้ว',
+        'preparing' => 'กำลังเตรียม',
+        'ready' => 'พร้อมเสิร์ฟ',
+        'completed' => 'เสร็จสิ้น',
+        'cancelled' => 'ยกเลิก'
+    ];
+    
+    return $statusMap[$status] ?? 'ไม่ทราบสถานะ';
+}
+
+// ฟังก์ชันสำหรับการจัดการสถานะออเดอร์ class
+function getOrderStatusClass($status) {
+    $classMap = [
+        'pending' => 'bg-warning',
+        'confirmed' => 'bg-info',
+        'preparing' => 'bg-primary',
+        'ready' => 'bg-success',
+        'completed' => 'bg-secondary',
+        'cancelled' => 'bg-danger'
+    ];
+    
+    return $classMap[$status] ?? 'bg-secondary';
+}
+
+// ฟังก์ชันตรวจสอบการเชื่อมต่อฐานข้อมูล
+function testDatabaseConnection() {
+    try {
+        require_once dirname(__FILE__) . '/database.php';
+        $db = new Database();
+        $conn = $db->getConnection();
+        
+        if ($conn) {
+            return true;
+        }
+        return false;
+    } catch (Exception $e) {
+        writeLog("Database connection test failed: " . $e->getMessage());
+        return false;
     }
 }
 

@@ -9,6 +9,7 @@ require_once '../config/config.php';
 require_once '../config/database.php';
 require_once '../config/session.php';
 require_once '../includes/functions.php';
+require_once '../includes/auth.php';
 
 // ตรวจสอบสิทธิ์
 if (!isLoggedIn() || getCurrentUserRole() !== 'admin') {
@@ -31,10 +32,15 @@ $recentOrders = [];
 $topProducts = [];
 $salesChart = [];
 $queueStats = ['avg_wait_time' => 0, 'total_completed' => 0];
+$error = null;
 
 try {
     $db = new Database();
     $conn = $db->getConnection();
+    
+    if (!$conn) {
+        throw new Exception('ไม่สามารถเชื่อมต่อฐานข้อมูลได้');
+    }
     
     // สถิติภาพรวม - ยอดขายวันนี้
     $stmt = $conn->prepare("
@@ -46,8 +52,10 @@ try {
     ");
     $stmt->execute();
     $todayData = $stmt->fetch();
-    $stats['today_sales'] = $todayData['today_sales'];
-    $stats['today_orders'] = $todayData['today_orders'];
+    if ($todayData) {
+        $stats['today_sales'] = $todayData['today_sales'];
+        $stats['today_orders'] = $todayData['today_orders'];
+    }
     
     // ยอดขายเดือนนี้
     $stmt = $conn->prepare("
@@ -60,8 +68,10 @@ try {
     ");
     $stmt->execute();
     $monthData = $stmt->fetch();
-    $stats['month_sales'] = $monthData['month_sales'];
-    $stats['month_orders'] = $monthData['month_orders'];
+    if ($monthData) {
+        $stats['month_sales'] = $monthData['month_sales'];
+        $stats['month_orders'] = $monthData['month_orders'];
+    }
     
     // ออเดอร์ที่รอดำเนินการ
     $stmt = $conn->prepare("
@@ -70,7 +80,8 @@ try {
         WHERE status IN ('pending', 'confirmed', 'preparing')
     ");
     $stmt->execute();
-    $stats['pending_orders'] = $stmt->fetchColumn();
+    $pendingCount = $stmt->fetchColumn();
+    $stats['pending_orders'] = $pendingCount ? $pendingCount : 0;
     
     // จำนวนลูกค้าทั้งหมด
     $stmt = $conn->prepare("
@@ -79,7 +90,8 @@ try {
         WHERE role = 'customer' AND status = 'active'
     ");
     $stmt->execute();
-    $stats['total_customers'] = $stmt->fetchColumn();
+    $customerCount = $stmt->fetchColumn();
+    $stats['total_customers'] = $customerCount ? $customerCount : 0;
     
     // ออเดอร์ล่าสุด
     $stmt = $conn->prepare("
@@ -132,11 +144,17 @@ try {
         AND DATE(created_at) = CURDATE()
     ");
     $stmt->execute();
-    $queueStats = $stmt->fetch() ?: ['avg_wait_time' => 0, 'total_completed' => 0];
+    $queueData = $stmt->fetch();
+    if ($queueData) {
+        $queueStats = [
+            'avg_wait_time' => $queueData['avg_wait_time'] ? round($queueData['avg_wait_time']) : 0,
+            'total_completed' => $queueData['total_completed'] ? $queueData['total_completed'] : 0
+        ];
+    }
     
 } catch (Exception $e) {
     writeLog("Dashboard error: " . $e->getMessage());
-    $error = 'เกิดข้อผิดพลาดในการโหลดข้อมูล';
+    $error = 'เกิดข้อผิดพลาดในการโหลดข้อมูล: ' . $e->getMessage();
 }
 
 require_once '../includes/header.php';
@@ -157,10 +175,11 @@ require_once '../includes/sidebar.php';
     </div>
 </div>
 
-<?php if (isset($error)): ?>
+<?php if ($error): ?>
     <div class="alert alert-danger">
         <i class="fas fa-exclamation-triangle me-2"></i>
         <?php echo clean($error); ?>
+        <br><small>กรุณาตรวจสอบการเชื่อมต่อฐานข้อมูลและไฟล์ log</small>
     </div>
 <?php endif; ?>
 
@@ -355,7 +374,7 @@ require_once '../includes/sidebar.php';
                     <div class="col-6">
                         <div class="border-end">
                             <div class="h4 text-primary mb-1">
-                                <?php echo $queueStats['avg_wait_time'] ? number_format($queueStats['avg_wait_time']) : '0'; ?>
+                                <?php echo $queueStats['avg_wait_time']; ?>
                             </div>
                             <small class="text-muted">นาที<br>เวลารอเฉลี่ย</small>
                         </div>
@@ -413,44 +432,46 @@ $additionalJS = [
 $inlineJS = "
 // สร้างกราฟยอดขาย
 const salesData = " . json_encode($salesChart) . ";
-const ctx = document.getElementById('salesChart').getContext('2d');
+const ctx = document.getElementById('salesChart');
 
-const chart = new Chart(ctx, {
-    type: 'line',
-    data: {
-        labels: salesData.map(item => {
-            const date = new Date(item.sale_date);
-            return date.toLocaleDateString('th-TH', { month: 'short', day: 'numeric' });
-        }),
-        datasets: [{
-            label: 'ยอดขาย (บาท)',
-            data: salesData.map(item => item.daily_sales),
-            borderColor: '#4f46e5',
-            backgroundColor: 'rgba(79, 70, 229, 0.1)',
-            tension: 0.4,
-            fill: true
-        }]
-    },
-    options: {
-        responsive: true,
-        maintainAspectRatio: false,
-        plugins: {
-            legend: {
-                display: false
-            }
+if (ctx) {
+    const chart = new Chart(ctx, {
+        type: 'line',
+        data: {
+            labels: salesData.map(item => {
+                const date = new Date(item.sale_date);
+                return date.toLocaleDateString('th-TH', { month: 'short', day: 'numeric' });
+            }),
+            datasets: [{
+                label: 'ยอดขาย (บาท)',
+                data: salesData.map(item => item.daily_sales),
+                borderColor: '#4f46e5',
+                backgroundColor: 'rgba(79, 70, 229, 0.1)',
+                tension: 0.4,
+                fill: true
+            }]
         },
-        scales: {
-            y: {
-                beginAtZero: true,
-                ticks: {
-                    callback: function(value) {
-                        return '฿' + value.toLocaleString();
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: {
+                    display: false
+                }
+            },
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    ticks: {
+                        callback: function(value) {
+                            return '฿' + value.toLocaleString();
+                        }
                     }
                 }
             }
         }
-    }
-});
+    });
+}
 
 // ฟังก์ชันดูออเดอร์
 function viewOrder(orderId) {
@@ -459,7 +480,6 @@ function viewOrder(orderId) {
     
     $('#orderModalBody').html('<div class=\"text-center\"><div class=\"spinner-border\" role=\"status\"></div><p class=\"mt-2\">กำลังโหลด...</p></div>');
     
-    // โหลดข้อมูลออเดอร์ (สำหรับตอนนี้แสดงข้อมูลง่ายๆ)
     setTimeout(function() {
         $('#orderModalBody').html('<div class=\"alert alert-info\">ฟีเจอร์นี้จะพัฒนาเพิ่มเติม - ออเดอร์ไอดี: ' + orderId + '</div>');
     }, 1000);
@@ -471,11 +491,6 @@ function updateOrderStatus(orderId, status) {
         alert('ฟีเจอร์นี้จะพัฒนาเพิ่มเติม - ออเดอร์ไอดี: ' + orderId + ', สถานะ: ' + status);
     }
 }
-
-// Auto refresh ทุก 30 วินาที
-setInterval(function() {
-    // location.reload();
-}, 30000);
 
 console.log('Dashboard loaded successfully');
 ";
