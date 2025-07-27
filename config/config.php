@@ -199,34 +199,6 @@ function getLoginUrl() {
     }
 }
 
-// ฟังก์ชันสำหรับการจัดการสถานะออเดอร์
-function getOrderStatusText($status) {
-    $statusMap = [
-        'pending' => 'รอยืนยัน',
-        'confirmed' => 'ยืนยันแล้ว',
-        'preparing' => 'กำลังเตรียม',
-        'ready' => 'พร้อมเสิร์ฟ',
-        'completed' => 'เสร็จสิ้น',
-        'cancelled' => 'ยกเลิก'
-    ];
-    
-    return $statusMap[$status] ?? 'ไม่ทราบสถานะ';
-}
-
-// ฟังก์ชันสำหรับการจัดการสถานะออเดอร์ class
-function getOrderStatusClass($status) {
-    $classMap = [
-        'pending' => 'bg-warning',
-        'confirmed' => 'bg-info',
-        'preparing' => 'bg-primary',
-        'ready' => 'bg-success',
-        'completed' => 'bg-secondary',
-        'cancelled' => 'bg-danger'
-    ];
-    
-    return $classMap[$status] ?? 'bg-secondary';
-}
-
 // ฟังก์ชันตรวจสอบการเชื่อมต่อฐานข้อมูล
 function testDatabaseConnection() {
     try {

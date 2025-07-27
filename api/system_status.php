@@ -1,7 +1,7 @@
 <?php
 /**
  * API ตรวจสอบสถานะระบบ
- * Smart Order Management System
+ * Smart Order Management System - Fixed Version
  */
 
 define('SYSTEM_INIT', true);
@@ -23,29 +23,25 @@ if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
     exit();
 }
 
-// ตรวจสอบว่าเป็น AJAX request
-if (!isAjaxRequest()) {
-    sendJsonResponse(['error' => 'Invalid request method'], 400);
-}
-
+// ไม่ต้องตรวจสอบ AJAX request เข้มงวด
 $check = $_GET['check'] ?? '';
 
 try {
     switch ($check) {
         case 'database':
-            echo json_encode(checkDatabaseStatus());
+            sendJsonResponse(checkDatabaseStatus());
             break;
             
         case 'line':
-            echo json_encode(checkLineStatus());
+            sendJsonResponse(checkLineStatus());
             break;
             
         case 'printer':
-            echo json_encode(checkPrinterStatus());
+            sendJsonResponse(checkPrinterStatus());
             break;
             
         case 'all':
-            echo json_encode([
+            sendJsonResponse([
                 'database' => checkDatabaseStatus(),
                 'line' => checkLineStatus(),
                 'printer' => checkPrinterStatus()
@@ -53,11 +49,19 @@ try {
             break;
             
         default:
-            sendJsonResponse(['error' => 'Invalid check parameter'], 400);
+            sendJsonResponse([
+                'success' => false, 
+                'error' => 'Invalid check parameter',
+                'available_checks' => ['database', 'line', 'printer', 'all']
+            ]);
     }
 } catch (Exception $e) {
     writeLog("System status check error: " . $e->getMessage());
-    sendJsonResponse(['error' => 'System check failed'], 500);
+    sendJsonResponse([
+        'success' => false, 
+        'error' => 'System check failed',
+        'message' => DEBUG_MODE ? $e->getMessage() : 'Internal error'
+    ]);
 }
 
 /**
@@ -94,7 +98,7 @@ function checkDatabaseStatus() {
         return [
             'success' => false,
             'status' => 'error',
-            'message' => 'Database error: ' . $e->getMessage(),
+            'message' => DEBUG_MODE ? $e->getMessage() : 'Database connection error',
             'timestamp' => date('Y-m-d H:i:s')
         ];
     }
@@ -128,7 +132,7 @@ function checkLineStatus() {
         return [
             'success' => false,
             'status' => 'error',
-            'message' => 'LINE check error: ' . $e->getMessage(),
+            'message' => DEBUG_MODE ? $e->getMessage() : 'LINE check error',
             'timestamp' => date('Y-m-d H:i:s')
         ];
     }
@@ -142,6 +146,24 @@ function checkPrinterStatus() {
         // ตรวจสอบการตั้งค่าเครื่องพิมพ์จากฐานข้อมูล
         $db = new Database();
         $conn = $db->getConnection();
+        
+        // ตรวจสอบว่าตาราง system_settings มีอยู่หรือไม่
+        $tableExists = false;
+        try {
+            $result = $conn->query("SHOW TABLES LIKE 'system_settings'");
+            $tableExists = $result->rowCount() > 0;
+        } catch (Exception $e) {
+            // Table doesn't exist
+        }
+        
+        if (!$tableExists) {
+            return [
+                'success' => false,
+                'status' => 'not_configured',
+                'message' => 'Printer configuration table not available',
+                'timestamp' => date('Y-m-d H:i:s')
+            ];
+        }
         
         $stmt = $conn->prepare("
             SELECT setting_value 
@@ -168,7 +190,6 @@ function checkPrinterStatus() {
         }
         
     } catch (Exception $e) {
-        // ถ้าไม่มีตาราง system_settings ยัง
         return [
             'success' => false,
             'status' => 'not_configured',
