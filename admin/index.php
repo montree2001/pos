@@ -11,18 +11,32 @@ require_once '../config/session.php';
 require_once '../includes/functions.php';
 
 // ตรวจสอบสิทธิ์
-requireLogin('admin');
+if (!isLoggedIn() || getCurrentUserRole() !== 'admin') {
+    header('Location: login.php');
+    exit();
+}
 
 $pageTitle = 'หน้าหลัก';
+
+// เริ่มต้นตัวแปร
+$stats = [
+    'today_sales' => 0,
+    'today_orders' => 0,
+    'month_sales' => 0,
+    'month_orders' => 0,
+    'pending_orders' => 0,
+    'total_customers' => 0
+];
+$recentOrders = [];
+$topProducts = [];
+$salesChart = [];
+$queueStats = ['avg_wait_time' => 0, 'total_completed' => 0];
 
 try {
     $db = new Database();
     $conn = $db->getConnection();
     
-    // สถิติภาพรวม
-    $stats = [];
-    
-    // ยอดขายวันนี้
+    // สถิติภาพรวม - ยอดขายวันนี้
     $stmt = $conn->prepare("
         SELECT COALESCE(SUM(total_price), 0) as today_sales,
                COUNT(*) as today_orders
@@ -118,11 +132,11 @@ try {
         AND DATE(created_at) = CURDATE()
     ");
     $stmt->execute();
-    $queueStats = $stmt->fetch();
+    $queueStats = $stmt->fetch() ?: ['avg_wait_time' => 0, 'total_completed' => 0];
     
 } catch (Exception $e) {
     writeLog("Dashboard error: " . $e->getMessage());
-    setFlashMessage('error', 'เกิดข้อผิดพลาดในการโหลดข้อมูล');
+    $error = 'เกิดข้อผิดพลาดในการโหลดข้อมูล';
 }
 
 require_once '../includes/header.php';
@@ -142,6 +156,13 @@ require_once '../includes/sidebar.php';
         </button>
     </div>
 </div>
+
+<?php if (isset($error)): ?>
+    <div class="alert alert-danger">
+        <i class="fas fa-exclamation-triangle me-2"></i>
+        <?php echo clean($error); ?>
+    </div>
+<?php endif; ?>
 
 <!-- Stats Cards -->
 <div class="row mb-4">
@@ -216,7 +237,7 @@ require_once '../includes/sidebar.php';
                 </h5>
             </div>
             <div class="card-body">
-                <canvas id="salesChart" height="300"></canvas>
+                <canvas id="salesChart" height="100"></canvas>
             </div>
         </div>
     </div>
@@ -290,37 +311,9 @@ require_once '../includes/sidebar.php';
                                         <td><?php echo clean($order['customer_name'] ?: 'ลูกค้าทั่วไป'); ?></td>
                                         <td><?php echo formatCurrency($order['total_price']); ?></td>
                                         <td>
-                                            <?php
-                                            $statusClass = '';
-                                            $statusText = '';
-                                            switch ($order['status']) {
-                                                case 'pending':
-                                                    $statusClass = 'bg-warning';
-                                                    $statusText = 'รอยืนยัน';
-                                                    break;
-                                                case 'confirmed':
-                                                    $statusClass = 'bg-info';
-                                                    $statusText = 'ยืนยันแล้ว';
-                                                    break;
-                                                case 'preparing':
-                                                    $statusClass = 'bg-primary';
-                                                    $statusText = 'กำลังเตรียม';
-                                                    break;
-                                                case 'ready':
-                                                    $statusClass = 'bg-success';
-                                                    $statusText = 'พร้อมเสิร์ฟ';
-                                                    break;
-                                                case 'completed':
-                                                    $statusClass = 'bg-secondary';
-                                                    $statusText = 'เสร็จสิ้น';
-                                                    break;
-                                                case 'cancelled':
-                                                    $statusClass = 'bg-danger';
-                                                    $statusText = 'ยกเลิก';
-                                                    break;
-                                            }
-                                            ?>
-                                            <span class="badge <?php echo $statusClass; ?>"><?php echo $statusText; ?></span>
+                                            <span class="badge <?php echo getOrderStatusClass($order['status']); ?>">
+                                                <?php echo getOrderStatusText($order['status']); ?>
+                                            </span>
                                         </td>
                                         <td><?php echo formatDate($order['created_at'], 'H:i'); ?></td>
                                         <td>
@@ -464,37 +457,27 @@ function viewOrder(orderId) {
     const modal = new bootstrap.Modal(document.getElementById('orderModal'));
     modal.show();
     
-    // โหลดข้อมูลออเดอร์
-    $.get(SITE_URL + '/api/orders.php?action=get&id=' + orderId, function(response) {
-        if (response.success) {
-            $('#orderModalBody').html(response.html);
-        } else {
-            $('#orderModalBody').html('<div class=\"alert alert-danger\">ไม่สามารถโหลดข้อมูลได้</div>');
-        }
-    });
+    $('#orderModalBody').html('<div class=\"text-center\"><div class=\"spinner-border\" role=\"status\"></div><p class=\"mt-2\">กำลังโหลด...</p></div>');
+    
+    // โหลดข้อมูลออเดอร์ (สำหรับตอนนี้แสดงข้อมูลง่ายๆ)
+    setTimeout(function() {
+        $('#orderModalBody').html('<div class=\"alert alert-info\">ฟีเจอร์นี้จะพัฒนาเพิ่มเติม - ออเดอร์ไอดี: ' + orderId + '</div>');
+    }, 1000);
 }
 
 // ฟังก์ชันอัปเดตสถานะออเดอร์
 function updateOrderStatus(orderId, status) {
-    confirmAction('ต้องการอัปเดตสถานะออเดอร์นี้?', function() {
-        $.post(SITE_URL + '/api/orders.php', {
-            action: 'update_status',
-            order_id: orderId,
-            status: status
-        }, function(response) {
-            if (response.success) {
-                showSuccess('อัปเดตสถานะสำเร็จ', function() {
-                    location.reload();
-                });
-            }
-        });
-    });
+    if (confirm('ต้องการอัปเดตสถานะออเดอร์นี้?')) {
+        alert('ฟีเจอร์นี้จะพัฒนาเพิ่มเติม - ออเดอร์ไอดี: ' + orderId + ', สถานะ: ' + status);
+    }
 }
 
 // Auto refresh ทุก 30 วินาที
 setInterval(function() {
-    location.reload();
+    // location.reload();
 }, 30000);
+
+console.log('Dashboard loaded successfully');
 ";
 
 require_once '../includes/footer.php';
