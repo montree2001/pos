@@ -176,3 +176,131 @@
 [2025-07-28 21:21:17] [INFO] [::1] [user_1] Error checking blocked IP: SQLSTATE[42S02]: Base table or view not found: 1146 Table 'smart_order.login_attempts' doesn't exist
 [2025-07-28 21:21:17] [INFO] [::1] [user_3] User login: kitchen001 (ID: 3)
 [2025-07-28 21:21:17] [INFO] [::1] [user_3] Error clearing failed attempts: SQLSTATE[42S02]: Base table or view not found: 1146 Table 'smart_order.login_attempts' doesn't exist
+[2025-07-28 21:58:45] [INFO] [::1] [user_1] User login: admin (ID: 1)
+[2025-07-28 21:58:45] [INFO] [::1] [user_1] Error checking blocked IP: SQLSTATE[42S02]: Base table or view not found: 1146 Table 'smart_order.login_attempts' doesn't exist
+[2025-07-28 21:58:46] [INFO] [::1] [user_1] Error checking blocked IP: SQLSTATE[42S02]: Base table or view not found: 1146 Table 'smart_order.login_attempts' doesn't exist
+[2025-07-28 21:58:46] [INFO] [::1] [user_1] Error checking blocked IP: SQLSTATE[42S02]: Base table or view not found: 1146 Table 'smart_order.login_attempts' doesn't exist
+[2025-07-28 21:58:46] [INFO] [::1] [user_1] Error checking blocked IP: SQLSTATE[42S02]: Base table or view not found: 1146 Table 'smart_order.login_attempts' doesn't exist
+[2025-07-28 21:58:46] [INFO] [::1] [user_1] Error checking blocked IP: SQLSTATE[42S02]: Base table or view not found: 1146 Table 'smart_order.login_attempts' doesn't exist
+[2025-07-28 21:58:46] [INFO] [::1] [user_1] Error checking blocked IP: SQLSTATE[42S02]: Base table or view not found: 1146 Table 'smart_order.login_attempts' doesn't exist
+[2025-07-28 21:58:47] [INFO] [::1] [user_1] Error checking blocked IP: SQLSTATE[42S02]: Base table or view not found: 1146 Table 'smart_order.login_attempts' doesn't exist
+[2025-07-28 21:58:47] [INFO] [::1] [user_1] Error checking blocked IP: SQLSTATE[42S02]: Base table or view not found: 1146 Table 'smart_order.login_attempts' doesn't exist
+[2025-07-28 21:58:47] [INFO] [::1] [user_1] Error checking blocked IP: SQLSTATE[42S02]: Base table or view not found: 1146 Table 'smart_order.login_attempts' doesn't exist
+[2025-07-28 21:58:47] [INFO] [::1] [user_1] Error checking blocked IP: SQLSTATE[42S02]: Base table or view not found: 1146 Table 'smart_order.login_attempts' doesn't exist
+[2025-07-28 21:58:48] [INFO] [::1] [user_1] Error checking blocked IP: SQLSTATE[42S02]: Base table or view not found: 1146 Table 'smart_order.login_attempts' doesn't exist
+[2025-07-28 21:58:48] [INFO] [::1] [user_1] Error checking blocked IP: SQLSTATE[42S02]: Base table or view not found: 1146 Table 'smart_order.login_attempts' doesn't exist
+[2025-07-28 21:58:48] [INFO] [::1] [user_1] Error checking blocked IP: SQLSTATE[42S02]: Base table or view not found: 1146 Table 'smart_order.login_attempts' doesn't exist
+[2025-07-28 21:58:48] [INFO] [::1] [user_1] Error checking blocked IP: SQLSTATE[42S02]: Base table or view not found: 1146 Table 'smart_order.login_attempts' doesn't exist
+[2025-07-28 21:58:48] [INFO] [::1] [user_1] Error checking blocked IP: SQLSTATE[42S02]: Base table or view not found: 1146 Table 'smart_order.login_attempts' doesn't exist
+[2025-07-28 21:58:49] [INFO] [::1] [user_1] Error checking blocked IP: SQLSTATE[42S02]: Base table or view not found: 1146 Table 'smart_order.login_attempts' doesn't exist
+[2025-07-28 21:58:49] [INFO] [::1] [user_1] Error checking blocked IP: SQLSTATE[42S02]: Base table or view not found: 1146 Table 'smart_order.login_attempts' doesn't exist
+[2025-07-28 21:58:49] [INFO] [::1] [user_1] Error checking blocked IP: SQLSTATE[42S02]: Base table or view not found: 1146 Table 'smart_order.login_attempts' doesn't exist
+[2025-07-28 21:58:49] [INFO] [::1] [user_1] Error checking blocked IP: SQLSTATE[42S02]: Base table or view not found: 1146 Table 'smart_order.login_attempts' doesn't exist
+[2025-07-28 21:58:49] [INFO] [::1] [user_1] Error checking blocked IP: SQLSTATE[42S02]: Base table or view not found: 1146 Table 'smart_order.login_attempts' doesn't exist
+[2025-07-28 21:58:50] [INFO] [::1] [user_1] Error checking blocked IP: SQLSTATE[42S02]: Base table or view not found: 1146 Table 'smart_order.login_attempts' doesn't exist
+[2025-07-28 21:58:50] [INFO] [::1] [user_1] Error checking blocked IP: SQLSTATE[42S02]: Base table or view not found: 1146 Table 'smart_order.login_attempts' doesn't exist
+[2025-07-28 21:58:50] [INFO] [::1] [user_1] Error checking blocked IP: SQLSTATE[42S02]: Base table or view not found: 1146 Table 'smart_order.login_attempts' doesn't exist
+[2025-07-28 21:58:50] [INFO] [::1] [user_1] Error checking blocked IP: SQLSTATE[42S02]: Base table or view not found: 1146 Table 'smart_order.login_attempts' doesn't exist
+[2025-07-28 21:58:50] [INFO] [::1] [user_1] Error checking blocked IP: SQLSTATE[42S02]: Base table or view not found: 1146 Table 'smart_order.login_attempts' doesn't exist
+[2025-07-28 21:58:51] [INFO] [::1] [user_1] Error checking blocked IP: SQLSTATE[42S02]: Base table or view not found: 1146 Table 'smart_order.login_attempts' doesn't exist
+[2025-07-28 21:58:51] [INFO] [::1] [user_1] Error checking blocked IP: SQLSTATE[42S02]: Base table or view not found: 1146 Table 'smart_order.login_attempts' doesn't exist
+[2025-07-28 21:58:51] [INFO] [::1] [user_1] Error checking blocked IP: SQLSTATE[42S02]: Base table or view not found: 1146 Table 'smart_order.login_attempts' doesn't exist
+[2025-07-28 21:58:51] [INFO] [::1] [user_1] Error checking blocked IP: SQLSTATE[42S02]: Base table or view not found: 1146 Table 'smart_order.login_attempts' doesn't exist
+[2025-07-28 21:58:51] [INFO] [::1] [user_1] Error checking blocked IP: SQLSTATE[42S02]: Base table or view not found: 1146 Table 'smart_order.login_attempts' doesn't exist
+[2025-07-28 21:58:52] [INFO] [::1] [user_1] Error checking blocked IP: SQLSTATE[42S02]: Base table or view not found: 1146 Table 'smart_order.login_attempts' doesn't exist
+[2025-07-28 21:58:52] [INFO] [::1] [user_1] Error checking blocked IP: SQLSTATE[42S02]: Base table or view not found: 1146 Table 'smart_order.login_attempts' doesn't exist
+[2025-07-28 21:58:52] [INFO] [::1] [user_1] Error checking blocked IP: SQLSTATE[42S02]: Base table or view not found: 1146 Table 'smart_order.login_attempts' doesn't exist
+[2025-07-28 21:58:52] [INFO] [::1] [user_1] Error checking blocked IP: SQLSTATE[42S02]: Base table or view not found: 1146 Table 'smart_order.login_attempts' doesn't exist
+[2025-07-28 21:58:52] [INFO] [::1] [user_1] Error checking blocked IP: SQLSTATE[42S02]: Base table or view not found: 1146 Table 'smart_order.login_attempts' doesn't exist
+[2025-07-28 21:58:53] [INFO] [::1] [user_1] Error checking blocked IP: SQLSTATE[42S02]: Base table or view not found: 1146 Table 'smart_order.login_attempts' doesn't exist
+[2025-07-28 21:58:53] [INFO] [::1] [user_1] Error checking blocked IP: SQLSTATE[42S02]: Base table or view not found: 1146 Table 'smart_order.login_attempts' doesn't exist
+[2025-07-28 21:58:53] [INFO] [::1] [user_1] Error checking blocked IP: SQLSTATE[42S02]: Base table or view not found: 1146 Table 'smart_order.login_attempts' doesn't exist
+[2025-07-28 21:58:53] [INFO] [::1] [user_1] Error checking blocked IP: SQLSTATE[42S02]: Base table or view not found: 1146 Table 'smart_order.login_attempts' doesn't exist
+[2025-07-28 21:58:53] [INFO] [::1] [user_1] Error checking blocked IP: SQLSTATE[42S02]: Base table or view not found: 1146 Table 'smart_order.login_attempts' doesn't exist
+[2025-07-28 21:58:54] [INFO] [::1] [user_1] Error checking blocked IP: SQLSTATE[42S02]: Base table or view not found: 1146 Table 'smart_order.login_attempts' doesn't exist
+[2025-07-28 21:58:54] [INFO] [::1] [user_1] Error checking blocked IP: SQLSTATE[42S02]: Base table or view not found: 1146 Table 'smart_order.login_attempts' doesn't exist
+[2025-07-28 21:58:54] [INFO] [::1] [user_1] Error checking blocked IP: SQLSTATE[42S02]: Base table or view not found: 1146 Table 'smart_order.login_attempts' doesn't exist
+[2025-07-28 21:58:54] [INFO] [::1] [user_1] Error checking blocked IP: SQLSTATE[42S02]: Base table or view not found: 1146 Table 'smart_order.login_attempts' doesn't exist
+[2025-07-28 21:58:54] [INFO] [::1] [user_1] Error checking blocked IP: SQLSTATE[42S02]: Base table or view not found: 1146 Table 'smart_order.login_attempts' doesn't exist
+[2025-07-28 21:58:55] [INFO] [::1] [user_1] Error checking blocked IP: SQLSTATE[42S02]: Base table or view not found: 1146 Table 'smart_order.login_attempts' doesn't exist
+[2025-07-28 21:58:55] [INFO] [::1] [user_1] Error checking blocked IP: SQLSTATE[42S02]: Base table or view not found: 1146 Table 'smart_order.login_attempts' doesn't exist
+[2025-07-28 21:58:55] [INFO] [::1] [user_1] Error checking blocked IP: SQLSTATE[42S02]: Base table or view not found: 1146 Table 'smart_order.login_attempts' doesn't exist
+[2025-07-28 21:58:55] [INFO] [::1] [user_1] Error checking blocked IP: SQLSTATE[42S02]: Base table or view not found: 1146 Table 'smart_order.login_attempts' doesn't exist
+[2025-07-28 21:58:56] [INFO] [::1] [user_1] Error checking blocked IP: SQLSTATE[42S02]: Base table or view not found: 1146 Table 'smart_order.login_attempts' doesn't exist
+[2025-07-28 21:58:56] [INFO] [::1] [user_1] Error checking blocked IP: SQLSTATE[42S02]: Base table or view not found: 1146 Table 'smart_order.login_attempts' doesn't exist
+[2025-07-28 21:58:56] [INFO] [::1] [user_1] Error checking blocked IP: SQLSTATE[42S02]: Base table or view not found: 1146 Table 'smart_order.login_attempts' doesn't exist
+[2025-07-28 21:58:56] [INFO] [::1] [user_1] Error checking blocked IP: SQLSTATE[42S02]: Base table or view not found: 1146 Table 'smart_order.login_attempts' doesn't exist
+[2025-07-28 21:58:56] [INFO] [::1] [user_1] Error checking blocked IP: SQLSTATE[42S02]: Base table or view not found: 1146 Table 'smart_order.login_attempts' doesn't exist
+[2025-07-28 21:59:14] [INFO] [::1] [user_1] Error checking blocked IP: SQLSTATE[42S02]: Base table or view not found: 1146 Table 'smart_order.login_attempts' doesn't exist
+[2025-07-28 21:59:14] [INFO] [::1] [user_1] Error checking blocked IP: SQLSTATE[42S02]: Base table or view not found: 1146 Table 'smart_order.login_attempts' doesn't exist
+[2025-07-28 21:59:14] [INFO] [::1] [user_1] Error checking blocked IP: SQLSTATE[42S02]: Base table or view not found: 1146 Table 'smart_order.login_attempts' doesn't exist
+[2025-07-28 21:59:14] [INFO] [::1] [user_1] Error checking blocked IP: SQLSTATE[42S02]: Base table or view not found: 1146 Table 'smart_order.login_attempts' doesn't exist
+[2025-07-28 21:59:15] [INFO] [::1] [user_1] Error checking blocked IP: SQLSTATE[42S02]: Base table or view not found: 1146 Table 'smart_order.login_attempts' doesn't exist
+[2025-07-28 21:59:15] [INFO] [::1] [user_1] Error checking blocked IP: SQLSTATE[42S02]: Base table or view not found: 1146 Table 'smart_order.login_attempts' doesn't exist
+[2025-07-28 21:59:15] [INFO] [::1] [user_1] Error checking blocked IP: SQLSTATE[42S02]: Base table or view not found: 1146 Table 'smart_order.login_attempts' doesn't exist
+[2025-07-28 21:59:15] [INFO] [::1] [user_1] Error checking blocked IP: SQLSTATE[42S02]: Base table or view not found: 1146 Table 'smart_order.login_attempts' doesn't exist
+[2025-07-28 21:59:15] [INFO] [::1] [user_1] Error checking blocked IP: SQLSTATE[42S02]: Base table or view not found: 1146 Table 'smart_order.login_attempts' doesn't exist
+[2025-07-28 21:59:16] [INFO] [::1] [user_1] Error checking blocked IP: SQLSTATE[42S02]: Base table or view not found: 1146 Table 'smart_order.login_attempts' doesn't exist
+[2025-07-28 21:59:16] [INFO] [::1] [user_1] Error checking blocked IP: SQLSTATE[42S02]: Base table or view not found: 1146 Table 'smart_order.login_attempts' doesn't exist
+[2025-07-28 21:59:16] [INFO] [::1] [user_1] Error checking blocked IP: SQLSTATE[42S02]: Base table or view not found: 1146 Table 'smart_order.login_attempts' doesn't exist
+[2025-07-28 21:59:16] [INFO] [::1] [user_1] Error checking blocked IP: SQLSTATE[42S02]: Base table or view not found: 1146 Table 'smart_order.login_attempts' doesn't exist
+[2025-07-28 21:59:16] [INFO] [::1] [user_1] Error checking blocked IP: SQLSTATE[42S02]: Base table or view not found: 1146 Table 'smart_order.login_attempts' doesn't exist
+[2025-07-28 21:59:17] [INFO] [::1] [user_1] Error checking blocked IP: SQLSTATE[42S02]: Base table or view not found: 1146 Table 'smart_order.login_attempts' doesn't exist
+[2025-07-28 21:59:17] [INFO] [::1] [user_1] Error checking blocked IP: SQLSTATE[42S02]: Base table or view not found: 1146 Table 'smart_order.login_attempts' doesn't exist
+[2025-07-28 21:59:17] [INFO] [::1] [user_1] Error checking blocked IP: SQLSTATE[42S02]: Base table or view not found: 1146 Table 'smart_order.login_attempts' doesn't exist
+[2025-07-28 21:59:17] [INFO] [::1] [user_1] Error checking blocked IP: SQLSTATE[42S02]: Base table or view not found: 1146 Table 'smart_order.login_attempts' doesn't exist
+[2025-07-28 21:59:17] [INFO] [::1] [user_1] Error checking blocked IP: SQLSTATE[42S02]: Base table or view not found: 1146 Table 'smart_order.login_attempts' doesn't exist
+[2025-07-28 21:59:18] [INFO] [::1] [user_1] Error checking blocked IP: SQLSTATE[42S02]: Base table or view not found: 1146 Table 'smart_order.login_attempts' doesn't exist
+[2025-07-28 21:59:18] [INFO] [::1] [user_1] Error checking blocked IP: SQLSTATE[42S02]: Base table or view not found: 1146 Table 'smart_order.login_attempts' doesn't exist
+[2025-07-28 21:59:22] [INFO] [::1] [user_1] Error checking blocked IP: SQLSTATE[42S02]: Base table or view not found: 1146 Table 'smart_order.login_attempts' doesn't exist
+[2025-07-28 21:59:42] [INFO] [::1] [user_1] Payment error: SQLSTATE[22001]: String data, right truncated: 1406 Data too long for column 'queue_number' at row 1
+[2025-07-28 21:59:43] [INFO] [::1] [user_1] Payment error: SQLSTATE[22001]: String data, right truncated: 1406 Data too long for column 'queue_number' at row 1
+[2025-07-28 21:59:43] [INFO] [::1] [user_1] Payment error: SQLSTATE[22001]: String data, right truncated: 1406 Data too long for column 'queue_number' at row 1
+[2025-07-28 21:59:43] [INFO] [::1] [user_1] Payment error: SQLSTATE[22001]: String data, right truncated: 1406 Data too long for column 'queue_number' at row 1
+[2025-07-28 21:59:43] [INFO] [::1] [user_1] Payment error: SQLSTATE[22001]: String data, right truncated: 1406 Data too long for column 'queue_number' at row 1
+[2025-07-28 21:59:43] [INFO] [::1] [user_1] Payment error: SQLSTATE[22001]: String data, right truncated: 1406 Data too long for column 'queue_number' at row 1
+[2025-07-28 21:59:44] [INFO] [::1] [user_1] Payment error: SQLSTATE[22001]: String data, right truncated: 1406 Data too long for column 'queue_number' at row 1
+[2025-07-28 21:59:44] [INFO] [::1] [user_1] Payment error: SQLSTATE[22001]: String data, right truncated: 1406 Data too long for column 'queue_number' at row 1
+[2025-07-28 21:59:44] [INFO] [::1] [user_1] Payment error: SQLSTATE[22001]: String data, right truncated: 1406 Data too long for column 'queue_number' at row 1
+[2025-07-28 21:59:44] [INFO] [::1] [user_1] Payment error: SQLSTATE[22001]: String data, right truncated: 1406 Data too long for column 'queue_number' at row 1
+[2025-07-28 21:59:44] [INFO] [::1] [user_1] Payment error: SQLSTATE[22001]: String data, right truncated: 1406 Data too long for column 'queue_number' at row 1
+[2025-07-28 21:59:45] [INFO] [::1] [user_1] Payment error: SQLSTATE[22001]: String data, right truncated: 1406 Data too long for column 'queue_number' at row 1
+[2025-07-28 21:59:45] [INFO] [::1] [user_1] Payment error: SQLSTATE[22001]: String data, right truncated: 1406 Data too long for column 'queue_number' at row 1
+[2025-07-28 21:59:45] [INFO] [::1] [user_1] Payment error: SQLSTATE[22001]: String data, right truncated: 1406 Data too long for column 'queue_number' at row 1
+[2025-07-28 21:59:45] [INFO] [::1] [user_1] Payment error: SQLSTATE[22001]: String data, right truncated: 1406 Data too long for column 'queue_number' at row 1
+[2025-07-28 21:59:45] [INFO] [::1] [user_1] Payment error: SQLSTATE[22001]: String data, right truncated: 1406 Data too long for column 'queue_number' at row 1
+[2025-07-28 21:59:46] [INFO] [::1] [user_1] Payment error: SQLSTATE[22001]: String data, right truncated: 1406 Data too long for column 'queue_number' at row 1
+[2025-07-28 21:59:46] [INFO] [::1] [user_1] Payment error: SQLSTATE[22001]: String data, right truncated: 1406 Data too long for column 'queue_number' at row 1
+[2025-07-28 21:59:46] [INFO] [::1] [user_1] Payment error: SQLSTATE[22001]: String data, right truncated: 1406 Data too long for column 'queue_number' at row 1
+[2025-07-28 21:59:46] [INFO] [::1] [user_1] Payment error: SQLSTATE[22001]: String data, right truncated: 1406 Data too long for column 'queue_number' at row 1
+[2025-07-28 21:59:46] [INFO] [::1] [user_1] Payment error: SQLSTATE[22001]: String data, right truncated: 1406 Data too long for column 'queue_number' at row 1
+[2025-07-28 21:59:47] [INFO] [::1] [user_1] Payment error: SQLSTATE[22001]: String data, right truncated: 1406 Data too long for column 'queue_number' at row 1
+[2025-07-28 21:59:47] [INFO] [::1] [user_1] Payment error: SQLSTATE[22001]: String data, right truncated: 1406 Data too long for column 'queue_number' at row 1
+[2025-07-28 21:59:47] [INFO] [::1] [user_1] Payment error: SQLSTATE[22001]: String data, right truncated: 1406 Data too long for column 'queue_number' at row 1
+[2025-07-28 21:59:47] [INFO] [::1] [user_1] Payment error: SQLSTATE[22001]: String data, right truncated: 1406 Data too long for column 'queue_number' at row 1
+[2025-07-28 21:59:47] [INFO] [::1] [user_1] Payment error: SQLSTATE[22001]: String data, right truncated: 1406 Data too long for column 'queue_number' at row 1
+[2025-07-28 21:59:48] [INFO] [::1] [user_1] Payment error: SQLSTATE[22001]: String data, right truncated: 1406 Data too long for column 'queue_number' at row 1
+[2025-07-28 21:59:48] [INFO] [::1] [user_1] Payment error: SQLSTATE[22001]: String data, right truncated: 1406 Data too long for column 'queue_number' at row 1
+[2025-07-28 21:59:48] [INFO] [::1] [user_1] Payment error: SQLSTATE[22001]: String data, right truncated: 1406 Data too long for column 'queue_number' at row 1
+[2025-07-28 21:59:48] [INFO] [::1] [user_1] Payment error: SQLSTATE[22001]: String data, right truncated: 1406 Data too long for column 'queue_number' at row 1
+[2025-07-28 21:59:49] [INFO] [::1] [user_1] Payment error: SQLSTATE[22001]: String data, right truncated: 1406 Data too long for column 'queue_number' at row 1
+[2025-07-28 21:59:49] [INFO] [::1] [user_1] Payment error: SQLSTATE[22001]: String data, right truncated: 1406 Data too long for column 'queue_number' at row 1
+[2025-07-28 21:59:49] [INFO] [::1] [user_1] Payment error: SQLSTATE[22001]: String data, right truncated: 1406 Data too long for column 'queue_number' at row 1
+[2025-07-28 21:59:49] [INFO] [::1] [user_1] Payment error: SQLSTATE[22001]: String data, right truncated: 1406 Data too long for column 'queue_number' at row 1
+[2025-07-28 21:59:49] [INFO] [::1] [user_1] Payment error: SQLSTATE[22001]: String data, right truncated: 1406 Data too long for column 'queue_number' at row 1
+[2025-07-28 21:59:50] [INFO] [::1] [user_1] Payment error: SQLSTATE[22001]: String data, right truncated: 1406 Data too long for column 'queue_number' at row 1
+[2025-07-28 21:59:50] [INFO] [::1] [user_1] Payment error: SQLSTATE[22001]: String data, right truncated: 1406 Data too long for column 'queue_number' at row 1
+[2025-07-28 21:59:50] [INFO] [::1] [user_1] Payment error: SQLSTATE[22001]: String data, right truncated: 1406 Data too long for column 'queue_number' at row 1
+[2025-07-28 21:59:50] [INFO] [::1] [user_1] Payment error: SQLSTATE[22001]: String data, right truncated: 1406 Data too long for column 'queue_number' at row 1
+[2025-07-28 21:59:50] [INFO] [::1] [user_1] Payment error: SQLSTATE[22001]: String data, right truncated: 1406 Data too long for column 'queue_number' at row 1
+[2025-07-28 21:59:51] [INFO] [::1] [user_1] Payment error: SQLSTATE[22001]: String data, right truncated: 1406 Data too long for column 'queue_number' at row 1
+[2025-07-28 21:59:51] [INFO] [::1] [user_1] Payment error: SQLSTATE[22001]: String data, right truncated: 1406 Data too long for column 'queue_number' at row 1
+[2025-07-28 21:59:51] [INFO] [::1] [user_1] Payment error: SQLSTATE[22001]: String data, right truncated: 1406 Data too long for column 'queue_number' at row 1
+[2025-07-28 21:59:51] [INFO] [::1] [user_1] Payment error: SQLSTATE[22001]: String data, right truncated: 1406 Data too long for column 'queue_number' at row 1
+[2025-07-28 21:59:51] [INFO] [::1] [user_1] Payment error: SQLSTATE[22001]: String data, right truncated: 1406 Data too long for column 'queue_number' at row 1
+[2025-07-28 21:59:52] [INFO] [::1] [user_1] Payment error: SQLSTATE[22001]: String data, right truncated: 1406 Data too long for column 'queue_number' at row 1
+[2025-07-28 22:00:23] [INFO] [::1] [user_1] Error checking blocked IP: SQLSTATE[42S02]: Base table or view not found: 1146 Table 'smart_order.login_attempts' doesn't exist
+[2025-07-28 22:00:31] [INFO] [::1] [guest] Error checking blocked IP: SQLSTATE[42S02]: Base table or view not found: 1146 Table 'smart_order.login_attempts' doesn't exist
+[2025-07-28 22:01:13] [INFO] [::1] [guest] Error checking blocked IP: SQLSTATE[42S02]: Base table or view not found: 1146 Table 'smart_order.login_attempts' doesn't exist
+[2025-07-28 22:01:13] [INFO] [::1] [user_3] User login: kitchen001 (ID: 3)
+[2025-07-28 22:01:13] [INFO] [::1] [user_3] Error clearing failed attempts: SQLSTATE[42S02]: Base table or view not found: 1146 Table 'smart_order.login_attempts' doesn't exist

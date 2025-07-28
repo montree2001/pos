@@ -1,15 +1,14 @@
 <?php
 /**
  * หน้าหลักระบบครัว - แสดงออเดอร์ที่ต้องทำ
- * Smart Order Management System
+ * Smart Order Management System - Updated Version
  */
-
 
 define('SYSTEM_INIT', true);
 require_once '../config/config.php';
 require_once '../config/database.php';
 require_once '../config/session.php';
-require_once '../includes/functions.php';  // ← เพิ่มบรรทัดนี้
+require_once '../includes/functions.php';
 require_once '../includes/auth.php';
 
 // ตรวจสอบสิทธิ์ครัว
@@ -20,54 +19,54 @@ if (!isLoggedIn() || getCurrentUserRole() !== 'kitchen') {
 
 $pageTitle = 'ระบบครัว';
 
-// ดึงข้อมูลออเดอร์ที่ต้องทำ
-$activeOrders = [];
-$todayStats = ['total' => 0, 'preparing' => 0, 'completed' => 0];
+// ดึงสถิติเบื้องต้น
+$todayStats = [
+    'total_orders' => 0,
+    'preparing_orders' => 0,
+    'ready_orders' => 0,
+    'completed_orders' => 0,
+    'avg_preparation_time' => 0
+];
 
 try {
     $db = new Database();
     $conn = $db->getConnection();
     
-    // ดึงออเดอร์ที่ต้องดำเนินการ
-    $stmt = $conn->prepare("
-        SELECT o.*, u.fullname as customer_name, u.phone,
-               COUNT(oi.item_id) as total_items,
-               SUM(CASE WHEN oi.status = 'completed' THEN 1 ELSE 0 END) as completed_items
-        FROM orders o
-        LEFT JOIN users u ON o.user_id = u.user_id
-        LEFT JOIN order_items oi ON o.order_id = oi.order_id
-        WHERE o.status IN ('confirmed', 'preparing') 
-        AND o.payment_status = 'paid'
-        GROUP BY o.order_id
-        ORDER BY o.created_at ASC
-    ");
-    $stmt->execute();
-    $activeOrders = $stmt->fetchAll();
-    
     // สถิติวันนี้
     $stmt = $conn->prepare("
         SELECT 
-            COUNT(*) as total,
-            SUM(CASE WHEN status = 'preparing' THEN 1 ELSE 0 END) as preparing,
-            SUM(CASE WHEN status = 'completed' THEN 1 ELSE 0 END) as completed
+            COUNT(*) as total_orders,
+            SUM(CASE WHEN status = 'preparing' THEN 1 ELSE 0 END) as preparing_orders,
+            SUM(CASE WHEN status = 'ready' THEN 1 ELSE 0 END) as ready_orders,
+            SUM(CASE WHEN status = 'completed' THEN 1 ELSE 0 END) as completed_orders,
+            AVG(TIMESTAMPDIFF(MINUTE, created_at, 
+                CASE WHEN status IN ('ready', 'completed') THEN updated_at ELSE NULL END
+            )) as avg_preparation_time
         FROM orders 
         WHERE DATE(created_at) = CURDATE()
         AND payment_status = 'paid'
     ");
     $stmt->execute();
     $stats = $stmt->fetch();
+    
     if ($stats) {
-        $todayStats = $stats;
+        $todayStats = array_merge($todayStats, $stats);
     }
     
+    // จำนวนออเดอร์ที่รอดำเนินการ
+    $stmt = $conn->prepare("
+        SELECT COUNT(*) as active_orders
+        FROM orders 
+        WHERE status IN ('confirmed', 'preparing') 
+        AND payment_status = 'paid'
+    ");
+    $stmt->execute();
+    $activeCount = $stmt->fetchColumn();
+    $todayStats['active_orders'] = $activeCount;
+    
 } catch (Exception $e) {
-    writeLog("Kitchen error: " . $e->getMessage());
-    setFlashMessage('error', 'เกิดข้อผิดพลาดในการโหลดข้อมูล');
+    writeLog("Kitchen stats error: " . $e->getMessage());
 }
-
-$additionalCSS = [
-    SITE_URL . '/assets/css/kitchen.css'
-];
 ?>
 <!DOCTYPE html>
 <html lang="th">
@@ -82,34 +81,42 @@ $additionalCSS = [
     <!-- Font Awesome -->
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" rel="stylesheet">
     
-    <!-- Custom Kitchen CSS -->
+    <!-- Kitchen System CSS -->
+    <link href="<?php echo SITE_URL; ?>/assets/css/kitchen.css" rel="stylesheet">
+    
     <style>
+        /* Additional inline styles for immediate styling */
         :root {
-            --primary-color: #4f46e5;
-            --success-color: #10b981;
-            --warning-color: #f59e0b;
-            --danger-color: #ef4444;
-            --info-color: #3b82f6;
-            --orange-color: #f97316;
-            --white: #ffffff;
-            --light-bg: #f8fafc;
-            --border-color: #e5e7eb;
-            --text-color: #1f2937;
-            --text-muted: #6b7280;
+            --kitchen-primary: #f97316;
+            --kitchen-primary-dark: #ea580c;
+            --kitchen-success: #10b981;
+            --kitchen-warning: #f59e0b;
+            --kitchen-info: #3b82f6;
+            --kitchen-light: #f8fafc;
+            --kitchen-white: #ffffff;
         }
         
         body {
-            background: var(--light-bg);
+            background: linear-gradient(135deg, var(--kitchen-light) 0%, #e2e8f0 100%);
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
         }
         
+        .kitchen-container {
+            padding: 15px;
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+        
         .kitchen-header {
-            background: linear-gradient(135deg, var(--orange-color), #ea580c);
+            background: linear-gradient(135deg, var(--kitchen-primary), var(--kitchen-primary-dark));
             color: white;
             padding: 20px;
             border-radius: 12px;
             margin-bottom: 20px;
             box-shadow: 0 4px 20px rgba(249, 115, 22, 0.3);
+            position: sticky;
+            top: 15px;
+            z-index: 100;
         }
         
         .kitchen-stats {
@@ -119,229 +126,97 @@ $additionalCSS = [
             margin-bottom: 30px;
         }
         
-        .stat-card {
-            background: white;
+        .kitchen-stat-card {
+            background: var(--kitchen-white);
             padding: 20px;
             border-radius: 12px;
             text-align: center;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
-            border-left: 4px solid var(--primary-color);
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+            border-left: 4px solid var(--kitchen-primary);
+            transition: all 0.3s ease;
         }
         
-        .stat-number {
-            font-size: 2rem;
+        .kitchen-stat-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+        }
+        
+        .kitchen-stat-card.total { border-left-color: var(--kitchen-info); }
+        .kitchen-stat-card.preparing { border-left-color: var(--kitchen-warning); }
+        .kitchen-stat-card.completed { border-left-color: var(--kitchen-success); }
+        .kitchen-stat-card.active { border-left-color: var(--kitchen-primary); }
+        
+        .kitchen-stat-number {
+            font-size: 2.5rem;
             font-weight: 700;
             margin-bottom: 5px;
+            color: #1e293b;
         }
         
-        .stat-label {
-            color: var(--text-muted);
+        .kitchen-stat-label {
+            color: #64748b;
             font-size: 0.9rem;
+            font-weight: 500;
         }
         
-        .orders-grid {
+        .kitchen-orders-grid {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
             gap: 20px;
         }
         
-        .order-card {
-            background: white;
-            border-radius: 12px;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
-            overflow: hidden;
-            transition: all 0.3s ease;
-            border-left: 6px solid var(--warning-color);
-        }
-        
-        .order-card.preparing {
-            border-left-color: var(--info-color);
-        }
-        
-        .order-card.ready {
-            border-left-color: var(--success-color);
-        }
-        
-        .order-card:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 8px 25px rgba(0,0,0,0.15);
-        }
-        
-        .order-header {
-            background: linear-gradient(135deg, #f8fafc, #f1f5f9);
-            padding: 15px 20px;
-            border-bottom: 1px solid var(--border-color);
-        }
-        
-        .order-number {
-            font-size: 1.25rem;
-            font-weight: 700;
-            color: var(--primary-color);
-        }
-        
-        .order-time {
-            font-size: 0.85rem;
-            color: var(--text-muted);
-        }
-        
-        .order-body {
-            padding: 20px;
-        }
-        
-        .order-items {
-            margin: 15px 0;
-        }
-        
-        .order-item {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 8px 0;
-            border-bottom: 1px solid #f1f5f9;
-        }
-        
-        .order-item:last-child {
-            border-bottom: none;
-        }
-        
-        .item-name {
-            font-weight: 600;
-            flex: 1;
-        }
-        
-        .item-quantity {
-            background: var(--primary-color);
-            color: white;
-            padding: 2px 8px;
-            border-radius: 12px;
-            font-size: 0.8rem;
-            margin: 0 10px;
-        }
-        
-        .item-status {
-            font-size: 0.8rem;
-        }
-        
-        .order-footer {
-            background: #f8fafc;
-            padding: 15px 20px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-        
-        .status-buttons {
-            display: flex;
-            gap: 10px;
-        }
-        
-        .btn-status {
-            border: none;
-            border-radius: 8px;
-            padding: 8px 16px;
-            font-weight: 600;
-            font-size: 0.85rem;
-            transition: all 0.3s ease;
-        }
-        
-        .btn-accept {
-            background: var(--info-color);
-            color: white;
-        }
-        
-        .btn-prepare {
-            background: var(--warning-color);
-            color: white;
-        }
-        
-        .btn-ready {
-            background: var(--success-color);
-            color: white;
-        }
-        
-        .btn-status:hover {
-            transform: translateY(-1px);
-            box-shadow: 0 4px 12px rgba(0,0,0,0.2);
-        }
-        
-        .progress-bar-custom {
-            height: 6px;
-            border-radius: 3px;
-            background: #e5e7eb;
-            margin: 10px 0;
-            overflow: hidden;
-        }
-        
-        .progress-fill {
+        #loadingOverlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
             height: 100%;
-            background: linear-gradient(90deg, var(--warning-color), var(--success-color));
-            border-radius: 3px;
-            transition: width 0.5s ease;
-        }
-        
-        .customer-info {
-            font-size: 0.9rem;
-            color: var(--text-muted);
-            margin-bottom: 10px;
-        }
-        
-        .preparation-time {
-            display: flex;
+            background: rgba(0, 0, 0, 0.5);
+            display: none;
             align-items: center;
-            gap: 5px;
-            color: var(--text-muted);
-            font-size: 0.9rem;
-        }
-        
-        .time-badge {
-            background: var(--warning-color);
+            justify-content: center;
+            z-index: 9999;
             color: white;
-            padding: 2px 8px;
-            border-radius: 12px;
-            font-size: 0.8rem;
         }
         
-        .urgent {
-            background: var(--danger-color) !important;
-            animation: pulse 2s infinite;
+        .loading-content {
+            text-align: center;
         }
         
-        @keyframes pulse {
-            0%, 100% { opacity: 1; }
-            50% { opacity: 0.7; }
+        .loading-spinner {
+            width: 40px;
+            height: 40px;
+            border: 4px solid rgba(255, 255, 255, 0.3);
+            border-left: 4px solid white;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 15px;
         }
         
-        /* Mobile Responsive */
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
         @media (max-width: 768px) {
-            .orders-grid {
+            .kitchen-container {
+                padding: 10px;
+            }
+            
+            .kitchen-orders-grid {
                 grid-template-columns: 1fr;
+                gap: 15px;
             }
             
             .kitchen-stats {
                 grid-template-columns: repeat(2, 1fr);
-            }
-            
-            .order-header {
-                padding: 12px 15px;
-            }
-            
-            .order-body {
-                padding: 15px;
-            }
-            
-            .status-buttons {
-                flex-wrap: wrap;
-            }
-            
-            .btn-status {
-                flex: 1;
-                min-width: 80px;
+                gap: 10px;
             }
         }
     </style>
 </head>
-<body>
-    <div class="container-fluid p-3">
+<body class="kitchen-body">
+    <div class="kitchen-container">
         <!-- Header -->
         <div class="kitchen-header">
             <div class="d-flex justify-content-between align-items-center">
@@ -349,473 +224,187 @@ $additionalCSS = [
                     <h1 class="h3 mb-1">
                         <i class="fas fa-fire me-2"></i>ระบบครัว
                     </h1>
-                    <p class="mb-0 opacity-75">จัดการออเดอร์และสถานะอาหาร</p>
+                    <p class="mb-0 subtitle">จัดการออเดอร์และสถานะอาหาร</p>
                 </div>
                 <div class="text-end">
-                    <div class="h5 mb-1" id="currentTime"><?php echo date('H:i:s'); ?></div>
-                    <small class="opacity-75"><?php echo formatDate(date('Y-m-d'), 'd/m/Y'); ?></small>
+                    <div class="kitchen-time">
+                        <div id="currentTime"><?php echo date('H:i:s'); ?></div>
+                        <div class="kitchen-date"><?php echo formatDate(date('Y-m-d'), 'd/m/Y'); ?></div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Quick Actions -->
+            <div class="d-flex justify-content-between align-items-center mt-3">
+                <div class="d-flex gap-2">
+                    <button class="btn btn-light btn-sm" data-action="refresh" title="รีเฟรช (F5)">
+                        <i class="fas fa-sync-alt me-1"></i>รีเฟรช
+                    </button>
+                    <a href="order_status.php" class="btn btn-light btn-sm">
+                        <i class="fas fa-tasks me-1"></i>จัดการสถานะ
+                    </a>
+                    <a href="completed_orders.php" class="btn btn-light btn-sm">
+                        <i class="fas fa-check-circle me-1"></i>ออเดอร์เสร็จ
+                    </a>
+                </div>
+                <div class="d-flex gap-2">
+                    <small class="text-light opacity-75">
+                        อัปเดตล่าสุด: <span id="lastRefresh"><?php echo date('H:i:s'); ?></span>
+                    </small>
+                    <a href="logout.php" class="btn btn-outline-light btn-sm">
+                        <i class="fas fa-sign-out-alt me-1"></i>ออกจากระบบ
+                    </a>
                 </div>
             </div>
         </div>
         
-        <!-- Stats -->
+        <!-- Statistics -->
         <div class="kitchen-stats">
-            <div class="stat-card">
-                <div class="stat-number text-primary"><?php echo $todayStats['total']; ?></div>
-                <div class="stat-label">ออเดอร์วันนี้</div>
+            <div class="kitchen-stat-card total">
+                <div class="kitchen-stat-number" id="total-orders"><?php echo $todayStats['total_orders']; ?></div>
+                <div class="kitchen-stat-label">ออเดอร์วันนี้</div>
             </div>
-            <div class="stat-card">
-                <div class="stat-number text-warning"><?php echo $todayStats['preparing']; ?></div>
-                <div class="stat-label">กำลังเตรียม</div>
+            <div class="kitchen-stat-card preparing">
+                <div class="kitchen-stat-number" id="preparing-orders"><?php echo $todayStats['preparing_orders']; ?></div>
+                <div class="kitchen-stat-label">กำลังเตรียม</div>
             </div>
-            <div class="stat-card">
-                <div class="stat-number text-success"><?php echo $todayStats['completed']; ?></div>
-                <div class="stat-label">เสร็จแล้ว</div>
+            <div class="kitchen-stat-card completed">
+                <div class="kitchen-stat-number" id="completed-orders"><?php echo $todayStats['completed_orders']; ?></div>
+                <div class="kitchen-stat-label">เสร็จแล้ว</div>
             </div>
-            <div class="stat-card">
-                <div class="stat-number text-info"><?php echo count($activeOrders); ?></div>
-                <div class="stat-label">รอดำเนินการ</div>
+            <div class="kitchen-stat-card active">
+                <div class="kitchen-stat-number" id="active-orders"><?php echo $todayStats['active_orders']; ?></div>
+                <div class="kitchen-stat-label">รอดำเนินการ</div>
             </div>
         </div>
         
         <!-- Orders Grid -->
-        <?php if (empty($activeOrders)): ?>
-            <div class="text-center py-5">
-                <div class="mb-3">
-                    <i class="fas fa-clipboard-check fa-4x text-success"></i>
-                </div>
-                <h4 class="text-success">ไม่มีออเดอร์ที่ต้องดำเนินการ</h4>
-                <p class="text-muted">ออเดอร์ทั้งหมดเสร็จสิ้นแล้ว</p>
-                <button onclick="location.reload()" class="btn btn-primary">
-                    <i class="fas fa-sync-alt me-2"></i>รีเฟรช
-                </button>
-            </div>
-        <?php else: ?>
-            <div class="orders-grid" id="ordersGrid">
-                <?php foreach ($activeOrders as $order): ?>
-                    <?php
-                    // คำนวณเวลาที่ผ่านไป
-                    $orderTime = new DateTime($order['created_at']);
-                    $now = new DateTime();
-                    $diff = $now->diff($orderTime);
-                    $minutesPassed = ($diff->h * 60) + $diff->i;
-                    
-                    // กำหนดสีตามเวลา
-                    $urgentClass = $minutesPassed > 20 ? 'urgent' : '';
-                    $statusClass = strtolower($order['status']);
-                    
-                    // คำนวณความคืบหน้า
-                    $progress = 0;
-                    if ($order['total_items'] > 0) {
-                        $progress = ($order['completed_items'] / $order['total_items']) * 100;
-                    }
-                    ?>
-                    <div class="order-card <?php echo $statusClass; ?>" data-order-id="<?php echo $order['order_id']; ?>">
-                        <div class="order-header">
-                            <div class="d-flex justify-content-between align-items-center">
-                                <div>
-                                    <div class="order-number">
-                                        คิว <?php echo clean($order['queue_number'] ?: 'ORD-' . $order['order_id']); ?>
-                                    </div>
-                                    <div class="order-time">
-                                        <i class="fas fa-clock me-1"></i>
-                                        <?php echo formatDate($order['created_at'], 'H:i'); ?> 
-                                        <span class="time-badge <?php echo $urgentClass; ?>">
-                                            <?php echo $minutesPassed; ?> นาที
-                                        </span>
-                                    </div>
-                                </div>
-                                <div class="text-end">
-                                    <div class="badge bg-<?php echo getOrderStatusClass($order['status']); ?> bg-opacity-10 text-<?php echo getOrderStatusClass($order['status']); ?> border border-<?php echo getOrderStatusClass($order['status']); ?>">
-                                        <?php echo getOrderStatusText($order['status']); ?>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                        
-                        <div class="order-body">
-                            <?php if ($order['customer_name']): ?>
-                                <div class="customer-info">
-                                    <i class="fas fa-user me-1"></i>
-                                    <?php echo clean($order['customer_name']); ?>
-                                    <?php if ($order['phone']): ?>
-                                        <span class="ms-2">
-                                            <i class="fas fa-phone me-1"></i>
-                                            <?php echo clean($order['phone']); ?>
-                                        </span>
-                                    <?php endif; ?>
-                                </div>
-                            <?php endif; ?>
-                            
-                            <div class="progress-bar-custom">
-                                <div class="progress-fill" style="width: <?php echo $progress; ?>%"></div>
-                            </div>
-                            
-                            <div class="order-items" id="orderItems<?php echo $order['order_id']; ?>">
-                                <!-- ข้อมูลรายการจะโหลดด้วย AJAX -->
-                            </div>
-                            
-                            <?php if ($order['notes']): ?>
-                                <div class="alert alert-warning alert-sm mt-2">
-                                    <i class="fas fa-sticky-note me-1"></i>
-                                    <strong>หมายเหตุ:</strong> <?php echo clean($order['notes']); ?>
-                                </div>
-                            <?php endif; ?>
-                        </div>
-                        
-                        <div class="order-footer">
-                            <div class="preparation-time">
-                                <i class="fas fa-stopwatch me-1"></i>
-                                <span id="timer<?php echo $order['order_id']; ?>"><?php echo $minutesPassed; ?> นาที</span>
-                            </div>
-                            
-                            <div class="status-buttons">
-                                <?php if ($order['status'] === 'confirmed'): ?>
-                                    <button onclick="updateOrderStatus(<?php echo $order['order_id']; ?>, 'preparing')" 
-                                            class="btn btn-status btn-accept">
-                                        <i class="fas fa-play me-1"></i>รับออเดอร์
-                                    </button>
-                                <?php elseif ($order['status'] === 'preparing'): ?>
-                                    <button onclick="updateOrderStatus(<?php echo $order['order_id']; ?>, 'ready')" 
-                                            class="btn btn-status btn-ready">
-                                        <i class="fas fa-check me-1"></i>พร้อมเสิร์ฟ
-                                    </button>
-                                <?php endif; ?>
-                                
-                                <button onclick="viewOrderDetails(<?php echo $order['order_id']; ?>)" 
-                                        class="btn btn-outline-secondary btn-sm">
-                                    <i class="fas fa-eye"></i>
-                                </button>
-                            </div>
-                        </div>
-                    </div>
-                <?php endforeach; ?>
-            </div>
-        <?php endif; ?>
-    </div>
-    
-    <!-- Order Details Modal -->
-    <div class="modal fade" id="orderDetailsModal" tabindex="-1">
-        <div class="modal-dialog modal-lg">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title">รายละเอียดออเดอร์</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-                </div>
-                <div class="modal-body" id="orderDetailsBody">
-                    <!-- รายละเอียดจะโหลดด้วย AJAX -->
+        <div class="kitchen-orders-grid" id="ordersGrid">
+            <!-- Orders will be loaded here by JavaScript -->
+            <div class="d-flex justify-content-center align-items-center" style="min-height: 200px;">
+                <div class="text-center text-muted">
+                    <div class="loading-spinner"></div>
+                    <div>กำลังโหลดข้อมูลออเดอร์...</div>
                 </div>
             </div>
         </div>
     </div>
     
-    <!-- Bootstrap JS -->
+    <!-- Loading Overlay -->
+    <div id="loadingOverlay">
+        <div class="loading-content">
+            <div class="loading-spinner"></div>
+            <div>กำลังประมวลผล...</div>
+        </div>
+    </div>
+    
+    <!-- Order Details Modal -->
+    <div class="modal fade kitchen-modal" id="orderDetailsModal" tabindex="-1">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">
+                        <i class="fas fa-receipt me-2"></i>รายละเอียดออเดอร์
+                    </h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body" id="orderDetailsBody">
+                    <!-- Content will be loaded by JavaScript -->
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Scripts -->
+    <!-- jQuery -->
+    <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+    
+    <!-- Bootstrap 5 JS -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
     
-    <!-- Kitchen JavaScript -->
+    <!-- Global JavaScript Variables -->
     <script>
-        // อัปเดตเวลาปัจจุบัน
-        function updateCurrentTime() {
-            const now = new Date();
-            document.getElementById('currentTime').textContent = now.toTimeString().substr(0, 8);
-        }
-        
-        // อัปเดต Timer สำหรับแต่ละออเดอร์
-        function updateOrderTimers() {
-            document.querySelectorAll('[id^="timer"]').forEach(timer => {
-                const orderId = timer.id.replace('timer', '');
-                const orderCard = document.querySelector(`[data-order-id="${orderId}"]`);
-                if (orderCard) {
-                    const currentMinutes = parseInt(timer.textContent);
-                    timer.textContent = (currentMinutes + 1) + ' นาที';
-                    
-                    // เปลี่ยนสีเมื่อเวลานาน
-                    if (currentMinutes > 20) {
-                        orderCard.classList.add('urgent');
-                    }
-                }
-            });
-        }
-        
-        // อัปเดตสถานะออเดอร์
-        function updateOrderStatus(orderId, status) {
-            const confirmText = status === 'preparing' ? 'เริ่มเตรียมออเดอร์นี้?' : 'ยืนยันว่าพร้อมเสิร์ฟ?';
-            
-            if (confirm(confirmText)) {
-                fetch('../api/orders.php', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/x-www-form-urlencoded',
-                    },
-                    body: `action=update_status&order_id=${orderId}&status=${status}`
-                })
-                .then(response => response.json())
-                .then(data => {
-                    if (data.success) {
-                        showNotification('success', 'อัปเดตสถานะสำเร็จ');
-                        
-                        // หากเป็น ready ให้ซ่อนการ์ด
-                        if (status === 'ready') {
-                            const orderCard = document.querySelector(`[data-order-id="${orderId}"]`);
-                            orderCard.style.animation = 'fadeOut 0.5s ease-out';
-                            setTimeout(() => {
-                                orderCard.remove();
-                                
-                                // ตรวจสอบว่าเหลือออเดอร์หรือไม่
-                                if (document.querySelectorAll('.order-card').length === 0) {
-                                    location.reload();
-                                }
-                            }, 500);
-                        } else {
-                            location.reload();
-                        }
-                    } else {
-                        showNotification('error', 'เกิดข้อผิดพลาด: ' + (data.error || 'ไม่สามารถอัปเดตได้'));
-                    }
-                })
-                .catch(error => {
-                    console.error('Error:', error);
-                    showNotification('error', 'เกิดข้อผิดพลาดในการเชื่อมต่อ');
-                });
-            }
-        }
-        
-        // ดูรายละเอียดออเดอร์
-        function viewOrderDetails(orderId) {
-            const modal = new bootstrap.Modal(document.getElementById('orderDetailsModal'));
-            modal.show();
-            
-            document.getElementById('orderDetailsBody').innerHTML = `
-                <div class="text-center">
-                    <div class="spinner-border text-primary" role="status"></div>
-                    <p class="mt-2">กำลังโหลดข้อมูล...</p>
-                </div>
-            `;
-            
-            fetch(`../api/orders.php?action=get&id=${orderId}`)
-                .then(response => response.json())
-                .then(data => {
-                    if (data.success) {
-                        displayOrderDetails(data.order);
-                    } else {
-                        document.getElementById('orderDetailsBody').innerHTML = `
-                            <div class="alert alert-danger">
-                                <i class="fas fa-exclamation-triangle me-2"></i>
-                                ไม่สามารถโหลดข้อมูลได้
-                            </div>
-                        `;
-                    }
-                })
-                .catch(error => {
-                    console.error('Error:', error);
-                    document.getElementById('orderDetailsBody').innerHTML = `
-                        <div class="alert alert-danger">
-                            <i class="fas fa-exclamation-triangle me-2"></i>
-                            เกิดข้อผิดพลาดในการเชื่อมต่อ
-                        </div>
-                    `;
-                });
-        }
-        
-        // แสดงรายละเอียดออเดอร์
-        function displayOrderDetails(order) {
-            let itemsHtml = '';
-            if (order.items && order.items.length > 0) {
-                itemsHtml = order.items.map(item => `
-                    <tr>
-                        <td>
-                            <div class="d-flex align-items-center">
-                                ${item.image ? `<img src="../uploads/menu_images/${item.image}" class="me-2" style="width: 40px; height: 40px; object-fit: cover; border-radius: 6px;">` : ''}
-                                <div>
-                                    <div class="fw-semibold">${item.product_name}</div>
-                                    ${item.notes ? `<small class="text-muted">${item.notes}</small>` : ''}
-                                </div>
-                            </div>
-                        </td>
-                        <td class="text-center">
-                            <span class="badge bg-primary">${item.quantity}</span>
-                        </td>
-                        <td class="text-center">
-                            <span class="badge bg-${getStatusClass(item.status)}">${getStatusText(item.status)}</span>
-                        </td>
-                    </tr>
-                `).join('');
-            }
-            
-            document.getElementById('orderDetailsBody').innerHTML = `
-                <div class="row">
-                    <div class="col-md-6">
-                        <h6><i class="fas fa-info-circle me-2"></i>ข้อมูลออเดอร์</h6>
-                        <table class="table table-sm">
-                            <tr><td><strong>หมายเลขคิว:</strong></td><td>${order.queue_number || 'ORD-' + order.order_id}</td></tr>
-                            <tr><td><strong>ลูกค้า:</strong></td><td>${order.customer_name || 'ลูกค้าทั่วไป'}</td></tr>
-                            <tr><td><strong>เวลาสั่ง:</strong></td><td>${new Date(order.created_at).toLocaleString('th-TH')}</td></tr>
-                            <tr><td><strong>ประเภท:</strong></td><td>${getOrderTypeText(order.order_type)}</td></tr>
-                            <tr><td><strong>ยอดรวม:</strong></td><td class="text-success fw-bold">฿${parseFloat(order.total_price).toLocaleString()}</td></tr>
-                        </table>
-                    </div>
-                    <div class="col-md-6">
-                        <h6><i class="fas fa-phone me-2"></i>ติดต่อลูกค้า</h6>
-                        <div class="mb-2">
-                            ${order.phone ? `<div><i class="fas fa-phone me-2"></i>${order.phone}</div>` : ''}
-                            ${order.email ? `<div><i class="fas fa-envelope me-2"></i>${order.email}</div>` : ''}
-                        </div>
-                        ${order.notes ? `
-                            <div class="alert alert-warning alert-sm">
-                                <i class="fas fa-sticky-note me-2"></i>
-                                <strong>หมายเหตุ:</strong> ${order.notes}
-                            </div>
-                        ` : ''}
-                    </div>
-                </div>
-                
-                <hr>
-                
-                <h6><i class="fas fa-utensils me-2"></i>รายการอาหาร</h6>
-                <div class="table-responsive">
-                    <table class="table table-hover">
-                        <thead class="table-light">
-                            <tr>
-                                <th>รายการ</th>
-                                <th class="text-center">จำนวน</th>
-                                <th class="text-center">สถานะ</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            ${itemsHtml}
-                        </tbody>
-                    </table>
-                </div>
-            `;
-        }
-        
-        // โหลดรายการอาหารของแต่ละออเดอร์
-        function loadOrderItems() {
-            document.querySelectorAll('[id^="orderItems"]').forEach(container => {
-                const orderId = container.id.replace('orderItems', '');
-                
-                fetch(`../api/orders.php?action=get&id=${orderId}`)
-                    .then(response => response.json())
-                    .then(data => {
-                        if (data.success && data.order.items) {
-                            let itemsHtml = '';
-                            data.order.items.forEach(item => {
-                                itemsHtml += `
-                                    <div class="order-item">
-                                        <div class="item-name">${item.product_name}</div>
-                                        <div class="item-quantity">${item.quantity}</div>
-                                        <div class="item-status text-${getStatusClass(item.status)}">
-                                            ${getStatusText(item.status)}
-                                        </div>
-                                    </div>
-                                `;
-                            });
-                            container.innerHTML = itemsHtml;
-                        }
-                    })
-                    .catch(error => console.error('Error loading items:', error));
-            });
-        }
-        
-        // ฟังก์ชันช่วย
-        function getStatusClass(status) {
-            const classes = {
-                'pending': 'secondary',
-                'preparing': 'warning',
-                'ready': 'success',
-                'completed': 'info',
-                'cancelled': 'danger'
-            };
-            return classes[status] || 'secondary';
-        }
-        
-        function getStatusText(status) {
-            const texts = {
-                'pending': 'รอดำเนินการ',
-                'preparing': 'กำลังเตรียม',
-                'ready': 'พร้อมเสิร์ฟ',
-                'completed': 'เสร็จสิ้น',
-                'cancelled': 'ยกเลิก'
-            };
-            return texts[status] || 'ไม่ทราบ';
-        }
-        
-        function getOrderTypeText(type) {
-            const types = {
-                'dine_in': 'ทานที่ร้าน',
-                'takeaway': 'ซื้อกลับ',
-                'delivery': 'ส่งถึงที่'
-            };
-            return types[type] || 'ไม่ระบุ';
-        }
-        
-        // แสดงการแจ้งเตือน
-        function showNotification(type, message) {
-            const alertClass = type === 'success' ? 'alert-success' : 'alert-danger';
-            const icon = type === 'success' ? 'check-circle' : 'exclamation-triangle';
-            
-            const alertHtml = `
-                <div class="alert ${alertClass} alert-dismissible fade show position-fixed" 
-                     style="top: 20px; right: 20px; z-index: 9999; min-width: 300px;">
-                    <i class="fas fa-${icon} me-2"></i>
-                    ${message}
-                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-                </div>
-            `;
-            
-            document.body.insertAdjacentHTML('beforeend', alertHtml);
-            
-            // ลบการแจ้งเตือนอัตโนมัติ
-            setTimeout(() => {
-                const alert = document.querySelector('.alert');
-                if (alert) {
-                    alert.remove();
-                }
-            }, 5000);
-        }
-        
-        // CSS สำหรับ animation
-        const style = document.createElement('style');
-        style.textContent = `
-            @keyframes fadeOut {
-                from { opacity: 1; transform: scale(1); }
-                to { opacity: 0; transform: scale(0.9); }
-            }
-        `;
-        document.head.appendChild(style);
-        
-        // เริ่มต้นระบบ
+        const SITE_URL = '<?php echo SITE_URL; ?>';
+        const USER_ROLE = '<?php echo getCurrentUserRole(); ?>';
+        const USER_ID = <?php echo getCurrentUserId(); ?>;
+        const IS_LOGGED_IN = true;
+    </script>
+    
+    <!-- Kitchen System JavaScript -->
+    <script src="<?php echo SITE_URL; ?>/assets/js/kitchen.js"></script>
+    
+    <script>
+        // Additional initialization for this page
         document.addEventListener('DOMContentLoaded', function() {
-            // อัปเดตเวลาทุกวินาที
-            setInterval(updateCurrentTime, 1000);
+            console.log('🔥 Kitchen Dashboard Ready');
             
-            // อัปเดต timer ทุกนาที
-            setInterval(updateOrderTimers, 60000);
+            // Add keyboard shortcuts info
+            console.log('⌨️ Keyboard Shortcuts:');
+            console.log('  F5 - รีเฟรชข้อมูล');
+            console.log('  ESC - ปิด Modal');
+            console.log('  Space - หยุด/เริ่ม Auto Refresh');
             
-            // โหลดรายการอาหาร
-            loadOrderItems();
+            // Show welcome notification
+            setTimeout(() => {
+                if (window.kitchenSystem) {
+                    window.kitchenSystem.showNotification('info', 'ยินดีต้อนรับสู่ระบบครัว', 3000);
+                }
+            }, 1000);
             
-            // รีเฟรชหน้าทุก 5 นาที
-            setInterval(() => {
-                location.reload();
-            }, 300000);
+            // Add connection status indicator
+            window.addEventListener('online', function() {
+                document.querySelector('.kitchen-header').style.borderLeft = '6px solid #10b981';
+            });
+            
+            window.addEventListener('offline', function() {
+                document.querySelector('.kitchen-header').style.borderLeft = '6px solid #ef4444';
+            });
         });
         
-        // รองรับ keyboard shortcuts
-        document.addEventListener('keydown', function(e) {
-            // F5 - รีเฟรช
-            if (e.key === 'F5') {
-                e.preventDefault();
-                location.reload();
-            }
+        // Voice synthesis support check
+        if ('speechSynthesis' in window) {
+            console.log('🎤 Voice synthesis supported');
+        } else {
+            console.log('❌ Voice synthesis not supported');
+        }
+        
+        // Service Worker for offline support (optional)
+        if ('serviceWorker' in navigator) {
+            navigator.serviceWorker.register('/sw.js').then(function(registration) {
+                console.log('SW registered: ', registration);
+            }).catch(function(registrationError) {
+                console.log('SW registration failed: ', registrationError);
+            });
+        }
+    </script>
+    
+    <!-- Error handling -->
+    <script>
+        window.addEventListener('error', function(e) {
+            console.error('Kitchen System Error:', e);
             
-            // ESC - ปิด modal
-            if (e.key === 'Escape') {
-                const modals = document.querySelectorAll('.modal.show');
-                modals.forEach(modal => {
-                    bootstrap.Modal.getInstance(modal)?.hide();
-                });
+            // Show user-friendly error message
+            if (window.kitchenSystem) {
+                window.kitchenSystem.showNotification('error', 'เกิดข้อผิดพลาดในระบบ กรุณารีเฟรชหน้า');
             }
+        });
+        
+        // Handle unhandled promise rejections
+        window.addEventListener('unhandledrejection', function(e) {
+            console.error('Unhandled Promise Rejection:', e);
+            
+            if (window.kitchenSystem) {
+                window.kitchenSystem.showNotification('warning', 'การเชื่อมต่อมีปัญหา กำลังลองใหม่อัตโนมัติ');
+            }
+        });
+    </script>
+    
+    <!-- Performance monitoring -->
+    <script>
+        // Log performance metrics
+        window.addEventListener('load', function() {
+            const perfData = performance.getEntriesByType('navigation')[0];
+            console.log('⚡ Page Load Time:', Math.round(perfData.loadEventEnd - perfData.fetchStart) + 'ms');
         });
     </script>
 </body>
