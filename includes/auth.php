@@ -619,4 +619,48 @@ function resetPassword($userId, $newPassword) {
         return false;
     }
 }
+
+
+// ป้องกันการเข้าถึงโดยตรง
+if (!defined('SYSTEM_INIT')) {
+    die('Direct access not allowed');
+}
+
+/**
+ * ฟังก์ชันช่วยเหลือ - เพิ่มเพื่อแก้ไขปัญหา undefined function
+ */
+if (!function_exists('getClientIP')) {
+    function getClientIP() {
+        $ipKeys = ['HTTP_CLIENT_IP', 'HTTP_X_FORWARDED_FOR', 'REMOTE_ADDR'];
+        
+        foreach ($ipKeys as $key) {
+            if (array_key_exists($key, $_SERVER) === true) {
+                foreach (explode(',', $_SERVER[$key]) as $ip) {
+                    $ip = trim($ip);
+                    if (filter_var($ip, FILTER_VALIDATE_IP, FILTER_FLAG_NO_PRIV_RANGE | FILTER_FLAG_NO_RES_RANGE) !== false) {
+                        return $ip;
+                    }
+                }
+            }
+        }
+        
+        return $_SERVER['REMOTE_ADDR'] ?? '0.0.0.0';
+    }
+}
+
+if (!function_exists('writeLog')) {
+    function writeLog($message, $level = 'INFO') {
+        // Simple log function for auth.php if not already defined
+        $logDir = dirname(__DIR__) . '/logs/';
+        if (!is_dir($logDir)) {
+            @mkdir($logDir, 0777, true);
+        }
+        
+        $logFile = $logDir . 'auth_' . date('Y-m-d') . '.log';
+        $timestamp = date('Y-m-d H:i:s');
+        $logMessage = "[$timestamp] [$level] $message" . PHP_EOL;
+        
+        @file_put_contents($logFile, $logMessage, FILE_APPEND | LOCK_EX);
+    }
+}
 ?>

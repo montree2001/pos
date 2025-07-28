@@ -4,11 +4,12 @@
  * Smart Order Management System
  */
 
+
 define('SYSTEM_INIT', true);
 require_once '../config/config.php';
 require_once '../config/database.php';
 require_once '../config/session.php';
-require_once '../includes/functions.php';
+require_once '../includes/functions.php';  // ← เพิ่มบรรทัดนี้
 require_once '../includes/auth.php';
 
 // ตรวจสอบสิทธิ์ครัว
