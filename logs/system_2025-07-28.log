@@ -103,3 +103,26 @@
 [2025-07-28 16:37:23] [INFO] [::1] [user_1] Payment error: SQLSTATE[22001]: String data, right truncated: 1406 Data too long for column 'queue_number' at row 1
 [2025-07-28 16:37:23] [INFO] [::1] [user_1] Payment error: SQLSTATE[22001]: String data, right truncated: 1406 Data too long for column 'queue_number' at row 1
 [2025-07-28 16:47:30] [INFO] [::1] [user_1] Queue reset by admin
+[2025-07-28 17:08:36] [INFO] [::1] [user_1] Payment settings updated by admin
+[2025-07-28 17:09:10] [INFO] [::1] [user_1] Payment methods updated by admin
+[2025-07-28 17:14:17] [INFO] [::1] [user_1] Payment methods updated by admin
+[2025-07-28 17:15:57] [INFO] [::1] [user_1] Payment error: SQLSTATE[22001]: String data, right truncated: 1406 Data too long for column 'queue_number' at row 1
+[2025-07-28 17:15:57] [INFO] [::1] [user_1] Payment error: SQLSTATE[22001]: String data, right truncated: 1406 Data too long for column 'queue_number' at row 1
+[2025-07-28 17:15:57] [INFO] [::1] [user_1] Payment error: SQLSTATE[22001]: String data, right truncated: 1406 Data too long for column 'queue_number' at row 1
+[2025-07-28 17:15:57] [INFO] [::1] [user_1] Payment error: SQLSTATE[22001]: String data, right truncated: 1406 Data too long for column 'queue_number' at row 1
+[2025-07-28 17:15:57] [INFO] [::1] [user_1] Payment error: SQLSTATE[22001]: String data, right truncated: 1406 Data too long for column 'queue_number' at row 1
+[2025-07-28 17:15:58] [INFO] [::1] [user_1] Payment error: SQLSTATE[22001]: String data, right truncated: 1406 Data too long for column 'queue_number' at row 1
+[2025-07-28 17:15:58] [INFO] [::1] [user_1] Payment error: SQLSTATE[22001]: String data, right truncated: 1406 Data too long for column 'queue_number' at row 1
+[2025-07-28 17:15:58] [INFO] [::1] [user_1] Payment error: SQLSTATE[22001]: String data, right truncated: 1406 Data too long for column 'queue_number' at row 1
+[2025-07-28 17:15:58] [INFO] [::1] [user_1] Payment error: SQLSTATE[22001]: String data, right truncated: 1406 Data too long for column 'queue_number' at row 1
+[2025-07-28 17:15:58] [INFO] [::1] [user_1] Payment error: SQLSTATE[22001]: String data, right truncated: 1406 Data too long for column 'queue_number' at row 1
+[2025-07-28 17:15:59] [INFO] [::1] [user_1] Payment error: SQLSTATE[22001]: String data, right truncated: 1406 Data too long for column 'queue_number' at row 1
+[2025-07-28 17:15:59] [INFO] [::1] [user_1] Payment error: SQLSTATE[22001]: String data, right truncated: 1406 Data too long for column 'queue_number' at row 1
+[2025-07-28 17:15:59] [INFO] [::1] [user_1] Payment error: SQLSTATE[22001]: String data, right truncated: 1406 Data too long for column 'queue_number' at row 1
+[2025-07-28 17:15:59] [INFO] [::1] [user_1] Payment error: SQLSTATE[22001]: String data, right truncated: 1406 Data too long for column 'queue_number' at row 1
+[2025-07-28 17:15:59] [INFO] [::1] [user_1] Payment error: SQLSTATE[22001]: String data, right truncated: 1406 Data too long for column 'queue_number' at row 1
+[2025-07-28 17:16:00] [INFO] [::1] [user_1] Payment error: SQLSTATE[22001]: String data, right truncated: 1406 Data too long for column 'queue_number' at row 1
+[2025-07-28 17:16:00] [INFO] [::1] [user_1] Payment error: SQLSTATE[22001]: String data, right truncated: 1406 Data too long for column 'queue_number' at row 1
+[2025-07-28 17:16:00] [INFO] [::1] [user_1] Payment error: SQLSTATE[22001]: String data, right truncated: 1406 Data too long for column 'queue_number' at row 1
+[2025-07-28 17:16:00] [INFO] [::1] [user_1] Payment error: SQLSTATE[22001]: String data, right truncated: 1406 Data too long for column 'queue_number' at row 1
+[2025-07-28 17:16:00] [INFO] [::1] [user_1] Payment error: SQLSTATE[22001]: String data, right truncated: 1406 Data too long for column 'queue_number' at row 1
