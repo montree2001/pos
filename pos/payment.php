@@ -1,6 +1,6 @@
 <?php
 /**
- * ระบบชำระเงิน - POS
+ * ระบบชำระเงิน - POS (แก้ไขแล้ว)
  * Smart Order Management System
  */
 
@@ -33,6 +33,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $tableNumber = trim($_POST['table_number'] ?? '');
         $paymentMethod = $_POST['payment_method'] ?? 'cash';
         $notes = trim($_POST['notes'] ?? '');
+        $cashReceived = floatval($_POST['cash_received'] ?? 0);
+        $cashChange = floatval($_POST['cash_change'] ?? 0);
         
         if (empty($cartData)) {
             $error = 'ไม่มีสินค้าในตะกร้า';
@@ -71,11 +73,16 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 }
                 
                 // บันทึกการชำระเงิน
+                $paymentNotes = '';
+                if ($paymentMethod === 'cash' && $cashReceived > 0) {
+                    $paymentNotes = "เงินที่รับมา: ฿" . number_format($cashReceived, 2) . " | เงินทอน: ฿" . number_format($cashChange, 2);
+                }
+                
                 $stmt = $conn->prepare("
-                    INSERT INTO payments (order_id, amount, payment_method, payment_date, status)
-                    VALUES (?, ?, ?, NOW(), 'completed')
+                    INSERT INTO payments (order_id, amount, payment_method, payment_date, status, admin_note)
+                    VALUES (?, ?, ?, NOW(), 'completed', ?)
                 ");
-                $stmt->execute([$orderId, $totalPrice, $paymentMethod]);
+                $stmt->execute([$orderId, $totalPrice, $paymentMethod, $paymentNotes]);
                 
                 // สร้างข้อมูลลูกค้าชั่วคราว (ถ้ามี)
                 if (!empty($customerName)) {
@@ -101,11 +108,52 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
 // ฟังก์ชันสร้างหมายเลขคิว
 function generateQueueNumber() {
-    $prefix = 'Q';
-    $date = date('ymd');
-    $time = date('Hi');
-    $random = str_pad(mt_rand(1, 99), 2, '0', STR_PAD_LEFT);
-    return $prefix . $date . $time . $random;
+    try {
+        $db = new Database();
+        $conn = $db->getConnection();
+        
+        // หาหมายเลขคิวล่าสุดของวันนี้
+        $today = date('Y-m-d');
+        $stmt = $conn->prepare("
+            SELECT queue_number 
+            FROM orders 
+            WHERE DATE(created_at) = ? 
+            AND queue_number LIKE ? 
+            ORDER BY queue_number DESC 
+            LIMIT 1
+        ");
+        
+        $prefix = 'Q' . date('ymd'); // Q250729
+        $stmt->execute([$today, $prefix . '%']);
+        $lastQueue = $stmt->fetch();
+        
+        if ($lastQueue) {
+            // ดึงเลขท้ายและเพิ่มขึ้น 1
+            $lastNumber = intval(substr($lastQueue['queue_number'], -3));
+            $newNumber = $lastNumber + 1;
+        } else {
+            // เริ่มต้นด้วย 1
+            $newNumber = 1;
+        }
+        
+        // สร้างหมายเลขคิวใหม่ (รูปแบบ: Q250729001)
+        $queueNumber = $prefix . str_pad($newNumber, 3, '0', STR_PAD_LEFT);
+        
+        // ตรวจสอบความยาวไม่เกิน 10 ตัวอักษร
+        if (strlen($queueNumber) > 10) {
+            // ถ้าเกิน 10 ตัว ให้ใช้รูปแบบสั้นลง
+            $shortPrefix = 'Q' . date('md'); // Q0729
+            $queueNumber = $shortPrefix . str_pad($newNumber, 3, '0', STR_PAD_LEFT);
+        }
+        
+        return $queueNumber;
+        
+    } catch (Exception $e) {
+        // ถ้าเกิดข้อผิดพลาด ใช้รูปแบบง่าย ๆ
+        $prefix = 'Q' . date('md'); // Q0729
+        $random = str_pad(mt_rand(1, 999), 3, '0', STR_PAD_LEFT);
+        return $prefix . $random;
+    }
 }
 ?>
 <!DOCTYPE html>
@@ -322,6 +370,173 @@ function generateQueueNumber() {
             cursor: not-allowed;
         }
         
+        .empty-state {
+            text-align: center;
+            padding: 40px;
+            color: #6b7280;
+        }
+        
+        .cash-payment-section {
+            background: #f8fafc;
+            border-radius: 8px;
+            padding: 15px;
+            margin-top: 15px;
+        }
+        
+        .change-display {
+            background: #f0f9f4;
+            border: 2px solid #d1fae5;
+            border-radius: 8px;
+            padding: 12px;
+            font-size: 1.1rem;
+            font-weight: 600;
+            text-align: center;
+        }
+        
+        .change-display.negative {
+            background: #fef2f2;
+            border-color: #fecaca;
+            color: #dc2626;
+        }
+        
+        .change-display.positive {
+            background: #f0f9f4;
+            border-color: #d1fae5;
+            color: #059669;
+        }
+        
+        .table-grid {
+            display: grid;
+            grid-template-columns: repeat(8, 1fr);
+            gap: 8px;
+            max-height: 280px;
+            overflow-y: auto;
+            padding: 15px;
+            background: #f8fafc;
+            border-radius: 12px;
+            border: 2px solid #e5e7eb;
+        }
+        
+        .table-option {
+            padding: 12px 8px;
+            border: 2px solid #e5e7eb;
+            border-radius: 8px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            background: white;
+            font-weight: 600;
+            font-size: 0.9rem;
+        }
+        
+        .table-option:hover {
+            border-color: var(--pos-success);
+            background: #f0f9f4;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(16, 185, 129, 0.2);
+        }
+        
+        .table-option.selected {
+            border-color: var(--pos-success);
+            background: var(--pos-success);
+            color: white;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);
+        }
+        
+        .table-selector {
+            position: relative;
+        }
+        
+        /* Cash Payment Modal Styles */
+        .quick-amounts {
+            background: #f8fafc;
+            border-radius: 12px;
+            padding: 15px;
+        }
+        
+        .amount-btn {
+            padding: 15px 10px;
+            border: 2px solid #e5e7eb;
+            border-radius: 8px;
+            background: white;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-weight: 600;
+            font-size: 1.1rem;
+        }
+        
+        .amount-btn:hover {
+            border-color: var(--pos-success);
+            background: #f0f9f4;
+            transform: translateY(-2px);
+        }
+        
+        .amount-btn.selected {
+            border-color: var(--pos-success);
+            background: var(--pos-success);
+            color: white;
+        }
+        
+        .amount-display {
+            padding: 15px;
+            border-radius: 8px;
+            text-align: center;
+            font-size: 1.3rem;
+            font-weight: 700;
+            border: 2px solid #e5e7eb;
+        }
+        
+        .amount-display.received {
+            background: #eff6ff;
+            border-color: #bfdbfe;
+            color: #1d4ed8;
+        }
+        
+        .amount-display.change {
+            background: #f0f9f4;
+            border-color: #bbf7d0;
+            color: #059669;
+        }
+        
+        .amount-display.negative {
+            background: #fef2f2;
+            border-color: #fecaca;
+            color: #dc2626;
+        }
+        
+        .status-message {
+            padding: 10px;
+            border-radius: 8px;
+            text-align: center;
+            font-weight: 600;
+            background: #f3f4f6;
+            color: #6b7280;
+        }
+        
+        .status-message.success {
+            background: #f0f9f4;
+            color: #059669;
+        }
+        
+        .status-message.error {
+            background: #fef2f2;
+            color: #dc2626;
+        }
+        
+        .change-summary {
+            background: #f8fafc;
+            border-radius: 12px;
+            padding: 20px;
+            border: 2px solid #e5e7eb;
+        }
+        
+        #cashAmountInput:focus {
+            border-color: var(--pos-success);
+            box-shadow: 0 0 0 0.2rem rgba(16, 185, 129, 0.25);
+        }
+        
         /* Mobile Responsive */
         @media (max-width: 768px) {
             .main-content {
@@ -340,6 +555,10 @@ function generateQueueNumber() {
             
             .pos-container {
                 padding: 10px;
+            }
+            
+            .table-grid {
+                grid-template-columns: repeat(6, 1fr);
             }
         }
     </style>
@@ -408,7 +627,7 @@ function generateQueueNumber() {
                             <div class="col-md-6">
                                 <div class="form-group">
                                     <label class="form-label">ประเภทออเดอร์</label>
-                                    <select class="form-select" name="order_type" required>
+                                    <select class="form-select" name="order_type" id="orderType" required onchange="toggleTableSelection()">
                                         <option value="dine_in">ทานที่ร้าน</option>
                                         <option value="takeaway">ซื้อกลับ</option>
                                         <option value="delivery">จัดส่ง</option>
@@ -417,10 +636,22 @@ function generateQueueNumber() {
                             </div>
                             
                             <div class="col-md-6">
-                                <div class="form-group">
-                                    <label class="form-label">หมายเลขโต๊ะ (ไม่บังคับ)</label>
-                                    <input type="text" class="form-control" name="table_number" 
-                                           placeholder="เช่น A1, B2">
+                                <div class="form-group" id="tableGroup">
+                                    <label class="form-label">หมายเลขโต๊ะ</label>
+                                    <div class="table-selector">
+                                        <div class="table-grid">
+                                            <?php 
+                                            // สร้างตัวเลือกโต๊ะ A1-A40 แบบ grid
+                                            for ($i = 1; $i <= 40; $i++): 
+                                                $tableNum = 'A' . str_pad($i, 2, '0', STR_PAD_LEFT);
+                                            ?>
+                                                <div class="table-option" data-table="<?php echo $tableNum; ?>" onclick="selectTable('<?php echo $tableNum; ?>')">
+                                                    <?php echo $tableNum; ?>
+                                                </div>
+                                            <?php endfor; ?>
+                                        </div>
+                                        <input type="hidden" name="table_number" id="selectedTable" value="">
+                                    </div>
                                 </div>
                             </div>
                         </div>
@@ -462,6 +693,10 @@ function generateQueueNumber() {
                                 </div>
                             </div>
                         </div>
+                        
+                        <!-- Hidden fields for cash payment -->
+                        <input type="hidden" name="cash_received" id="cashReceivedHidden" value="">
+                        <input type="hidden" name="cash_change" id="cashChangeHidden" value="">
                         
                         <!-- Notes -->
                         <div class="form-group">
@@ -508,6 +743,74 @@ function generateQueueNumber() {
         </div>
     </div>
     
+    <!-- Cash Payment Modal -->
+    <div class="modal fade" id="cashPaymentModal" tabindex="-1" aria-labelledby="cashPaymentModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header bg-success text-white">
+                    <h5 class="modal-title" id="cashPaymentModalLabel">
+                        <i class="fas fa-money-bill-wave me-2"></i>
+                        ชำระเงินสด
+                    </h5>
+                </div>
+                <div class="modal-body">
+                    <div class="text-center mb-4">
+                        <h3 class="text-success">ยอดที่ต้องชำระ</h3>
+                        <h1 class="display-4 text-success fw-bold" id="totalAmountDisplay">฿0.00</h1>
+                    </div>
+                    
+                    <div class="row">
+                        <!-- Quick Amount Buttons -->
+                        <div class="col-md-8">
+                            <label class="form-label fw-bold">เลือกจำนวนเงินที่รับมา</label>
+                            <div class="quick-amounts mb-3">
+                                <div class="row g-2" id="quickAmountButtons">
+                                    <!-- จะถูกสร้างด้วย JavaScript -->
+                                </div>
+                            </div>
+                            
+                            <label class="form-label fw-bold">หรือกรอกจำนวนเงิน</label>
+                            <div class="input-group">
+                                <span class="input-group-text">฿</span>
+                                <input type="number" class="form-control form-control-lg" 
+                                       id="cashAmountInput" step="1" min="0" 
+                                       placeholder="0" style="font-size: 1.5rem; text-align: center;">
+                            </div>
+                        </div>
+                        
+                        <!-- Change Display -->
+                        <div class="col-md-4">
+                            <div class="change-summary">
+                                <div class="mb-3">
+                                    <label class="form-label">เงินที่รับมา</label>
+                                    <div class="amount-display received" id="receivedDisplay">฿0.00</div>
+                                </div>
+                                
+                                <div class="mb-3">
+                                    <label class="form-label">เงินทอน</label>
+                                    <div class="amount-display change" id="changeDisplay">฿0.00</div>
+                                </div>
+                                
+                                <div class="status-message" id="statusMessage">
+                                    กรุณาเลือกจำนวนเงินที่รับมา
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                        <i class="fas fa-times me-1"></i>ยกเลิก
+                    </button>
+                    <button type="button" class="btn btn-success btn-lg" id="confirmCashPayment" disabled>
+                        <i class="fas fa-check-circle me-2"></i>
+                        ยืนยันการชำระเงิน
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+    
     <!-- Bootstrap 5 JS -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
     
@@ -518,6 +821,20 @@ function generateQueueNumber() {
         document.addEventListener('DOMContentLoaded', function() {
             loadCartData();
             updateOrderSummary();
+            toggleTableSelection(); // Initialize table selection
+            
+            // Add event listener for cash amount input
+            document.getElementById('cashAmountInput').addEventListener('input', function() {
+                // Remove selected class from amount buttons
+                document.querySelectorAll('.amount-btn').forEach(btn => {
+                    btn.classList.remove('selected');
+                });
+                
+                updateCashDisplay();
+            });
+            
+            // Add event listener for confirm cash payment button
+            document.getElementById('confirmCashPayment').addEventListener('click', confirmCashPayment);
         });
         
         function loadCartData() {
@@ -591,23 +908,224 @@ function generateQueueNumber() {
             document.querySelector(`input[name="payment_method"][value="${method}"]`).checked = true;
         }
         
+        // Select table function
+        function selectTable(tableNumber) {
+            // Remove selected class from all tables
+            document.querySelectorAll('.table-option').forEach(el => {
+                el.classList.remove('selected');
+            });
+            
+            // Add selected class to clicked table
+            event.currentTarget.classList.add('selected');
+            
+            // Set hidden input value
+            document.getElementById('selectedTable').value = tableNumber;
+        }
+        
+        // Toggle table selection based on order type
+        function toggleTableSelection() {
+            const orderType = document.getElementById('orderType').value;
+            const tableGroup = document.getElementById('tableGroup');
+            
+            if (orderType === 'dine_in') {
+                tableGroup.style.display = 'block';
+            } else {
+                tableGroup.style.display = 'none';
+                // Clear table selection
+                document.querySelectorAll('.table-option').forEach(el => {
+                    el.classList.remove('selected');
+                });
+                document.getElementById('selectedTable').value = '';
+            }
+        }
+        
+        // Get total price from order summary
+        function getTotalPrice() {
+            let total = 0;
+            cartData.forEach(item => {
+                total += item.price * item.quantity;
+            });
+            return total;
+        }
+        
+        // Show cash payment modal
+        function showCashPaymentModal() {
+            const totalPrice = getTotalPrice();
+            document.getElementById('totalAmountDisplay').textContent = '฿' + totalPrice.toFixed(2);
+            
+            // Generate quick amount buttons
+            generateQuickAmountButtons(totalPrice);
+            
+            // Reset modal state
+            resetCashModal();
+            
+            // Show modal
+            const modal = new bootstrap.Modal(document.getElementById('cashPaymentModal'));
+            modal.show();
+        }
+        
+        // Generate quick amount buttons
+        function generateQuickAmountButtons(totalPrice) {
+            const container = document.getElementById('quickAmountButtons');
+            container.innerHTML = '';
+            
+            // Common denominations
+            const amounts = [20, 50, 100, 500, 1000];
+            
+            // Add exact amount button
+            amounts.unshift(Math.ceil(totalPrice));
+            
+            // Add amounts that are convenient for change
+            const convenientAmounts = [
+                Math.ceil(totalPrice / 10) * 10, // Round up to nearest 10
+                Math.ceil(totalPrice / 50) * 50, // Round up to nearest 50
+                Math.ceil(totalPrice / 100) * 100 // Round up to nearest 100
+            ];
+            
+            convenientAmounts.forEach(amount => {
+                if (amount > totalPrice && !amounts.includes(amount)) {
+                    amounts.push(amount);
+                }
+            });
+            
+            // Sort and remove duplicates
+            const uniqueAmounts = [...new Set(amounts)].sort((a, b) => a - b);
+            
+            uniqueAmounts.forEach(amount => {
+                if (amount >= totalPrice) {
+                    const col = document.createElement('div');
+                    col.className = 'col-6 col-md-4 mb-2';
+                    
+                    const button = document.createElement('div');
+                    button.className = 'amount-btn';
+                    button.textContent = '฿' + amount;
+                    button.onclick = () => selectQuickAmount(amount);
+                    button.dataset.amount = amount;
+                    
+                    col.appendChild(button);
+                    container.appendChild(col);
+                }
+            });
+        }
+        
+        // Select quick amount
+        function selectQuickAmount(amount) {
+            // Remove selected class from all amount buttons
+            document.querySelectorAll('.amount-btn').forEach(btn => {
+                btn.classList.remove('selected');
+            });
+            
+            // Add selected class to clicked button
+            event.currentTarget.classList.add('selected');
+            
+            // Update input field
+            document.getElementById('cashAmountInput').value = amount;
+            
+            // Update displays
+            updateCashDisplay(amount);
+        }
+        
+        // Update cash display
+        function updateCashDisplay(receivedAmount = null) {
+            const totalPrice = getTotalPrice();
+            const amount = receivedAmount || parseFloat(document.getElementById('cashAmountInput').value) || 0;
+            
+            // Update received display
+            document.getElementById('receivedDisplay').textContent = '฿' + amount.toFixed(2);
+            
+            // Calculate and update change
+            const change = amount - totalPrice;
+            const changeDisplay = document.getElementById('changeDisplay');
+            const statusMessage = document.getElementById('statusMessage');
+            const confirmButton = document.getElementById('confirmCashPayment');
+            
+            if (amount === 0) {
+                changeDisplay.textContent = '฿0.00';
+                changeDisplay.className = 'amount-display change';
+                statusMessage.textContent = 'กรุณาเลือกจำนวนเงินที่รับมา';
+                statusMessage.className = 'status-message';
+                confirmButton.disabled = true;
+            } else if (change >= 0) {
+                changeDisplay.textContent = '฿' + change.toFixed(2);
+                changeDisplay.className = 'amount-display change';
+                statusMessage.textContent = change === 0 ? 'จำนวนเงินพอดี' : 'ทอนเงิน ฿' + change.toFixed(2);
+                statusMessage.className = 'status-message success';
+                confirmButton.disabled = false;
+            } else {
+                const shortage = Math.abs(change);
+                changeDisplay.textContent = 'ขาด ฿' + shortage.toFixed(2);
+                changeDisplay.className = 'amount-display change negative';
+                statusMessage.textContent = 'เงินไม่เพียงพอ ขาดอีก ฿' + shortage.toFixed(2);
+                statusMessage.className = 'status-message error';
+                confirmButton.disabled = true;
+            }
+        }
+        
+        // Reset cash modal
+        function resetCashModal() {
+            document.getElementById('cashAmountInput').value = '';
+            document.getElementById('receivedDisplay').textContent = '฿0.00';
+            document.getElementById('changeDisplay').textContent = '฿0.00';
+            document.getElementById('changeDisplay').className = 'amount-display change';
+            document.getElementById('statusMessage').textContent = 'กรุณาเลือกจำนวนเงินที่รับมา';
+            document.getElementById('statusMessage').className = 'status-message';
+            document.getElementById('confirmCashPayment').disabled = true;
+            
+            // Remove selected class from amount buttons
+            document.querySelectorAll('.amount-btn').forEach(btn => {
+                btn.classList.remove('selected');
+            });
+        }
+        
+        // Confirm cash payment
+        function confirmCashPayment() {
+            const receivedAmount = parseFloat(document.getElementById('cashAmountInput').value);
+            const totalPrice = getTotalPrice();
+            const change = receivedAmount - totalPrice;
+            
+            // Set hidden form values
+            document.getElementById('cashReceivedHidden').value = receivedAmount.toFixed(2);
+            document.getElementById('cashChangeHidden').value = change.toFixed(2);
+            
+            // Close modal
+            bootstrap.Modal.getInstance(document.getElementById('cashPaymentModal')).hide();
+            
+            // Submit form
+            document.getElementById('paymentForm').submit();
+        }
+        
         // Form submission
         document.getElementById('paymentForm').addEventListener('submit', function(e) {
+            e.preventDefault(); // Always prevent default submission
+            
             if (cartData.length === 0) {
-                e.preventDefault();
                 alert('ไม่มีสินค้าในตะกร้า');
                 return false;
             }
             
-            // Show loading
-            const submitBtn = document.getElementById('submitBtn');
-            submitBtn.disabled = true;
-            submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>กำลังดำเนินการ...';
+            // Check table selection for dine-in orders
+            const orderType = document.getElementById('orderType').value;
+            const selectedTable = document.getElementById('selectedTable').value;
             
-            return true;
+            if (orderType === 'dine_in' && !selectedTable) {
+                alert('กรุณาเลือกหมายเลขโต๊ะสำหรับการทานที่ร้าน');
+                return false;
+            }
+            
+            // Check payment method
+            const paymentMethod = document.querySelector('input[name="payment_method"]:checked').value;
+            
+            if (paymentMethod === 'cash') {
+                // Show cash payment modal
+                showCashPaymentModal();
+            } else {
+                // For other payment methods, submit directly
+                this.submit();
+            }
         });
         
         console.log('Payment page loaded successfully');
+        console.log('Cart data loaded:', cartData.length, 'items');
     </script>
 </body>
 </html>
