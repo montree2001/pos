@@ -1,66 +1,43 @@
 <?php
 /**
  * API ตรวจสอบสถานะระบบ
- * Smart Order Management System - Fixed Version
+ * Smart Order Management System
  */
 
 define('SYSTEM_INIT', true);
 require_once '../config/config.php';
 require_once '../config/database.php';
 require_once '../config/session.php';
+require_once '../includes/functions.php';
 
-// Set content type
+// ตั้งค่า Content-Type
 header('Content-Type: application/json; charset=utf-8');
 
-// CORS headers
-header('Access-Control-Allow-Origin: *');
-header('Access-Control-Allow-Methods: GET, POST, OPTIONS');
-header('Access-Control-Allow-Headers: Content-Type');
-
-// Handle preflight requests
-if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
-    http_response_code(200);
-    exit();
-}
-
-// ไม่ต้องตรวจสอบ AJAX request เข้มงวด
 $check = $_GET['check'] ?? '';
 
 try {
     switch ($check) {
         case 'database':
-            sendJsonResponse(checkDatabaseStatus());
+            checkDatabaseStatus();
             break;
             
         case 'line':
-            sendJsonResponse(checkLineStatus());
+            checkLineStatus();
             break;
             
         case 'printer':
-            sendJsonResponse(checkPrinterStatus());
-            break;
-            
-        case 'all':
-            sendJsonResponse([
-                'database' => checkDatabaseStatus(),
-                'line' => checkLineStatus(),
-                'printer' => checkPrinterStatus()
-            ]);
+            checkPrinterStatus();
             break;
             
         default:
-            sendJsonResponse([
-                'success' => false, 
-                'error' => 'Invalid check parameter',
-                'available_checks' => ['database', 'line', 'printer', 'all']
-            ]);
+            throw new Exception('ประเภทการตรวจสอบไม่ถูกต้อง');
     }
+    
 } catch (Exception $e) {
-    writeLog("System status check error: " . $e->getMessage());
-    sendJsonResponse([
-        'success' => false, 
-        'error' => 'System check failed',
-        'message' => DEBUG_MODE ? $e->getMessage() : 'Internal error'
+    echo json_encode([
+        'success' => false,
+        'status' => 'error',
+        'message' => $e->getMessage()
     ]);
 }
 
@@ -74,33 +51,28 @@ function checkDatabaseStatus() {
         
         if ($conn) {
             // ทดสอบการ query
-            $stmt = $conn->query("SELECT 1 as test");
+            $stmt = $conn->query("SELECT 1");
             $result = $stmt->fetch();
             
-            if ($result && $result['test'] == 1) {
-                return [
+            if ($result) {
+                echo json_encode([
                     'success' => true,
                     'status' => 'connected',
-                    'message' => 'Database connection successful',
-                    'timestamp' => date('Y-m-d H:i:s')
-                ];
+                    'message' => 'ฐานข้อมูลเชื่อมต่อปกติ'
+                ]);
+            } else {
+                throw new Exception('ไม่สามารถ query ฐานข้อมูลได้');
             }
+        } else {
+            throw new Exception('ไม่สามารถเชื่อมต่อฐานข้อมูลได้');
         }
         
-        return [
+    } catch (Exception $e) {
+        echo json_encode([
             'success' => false,
             'status' => 'disconnected',
-            'message' => 'Database connection failed',
-            'timestamp' => date('Y-m-d H:i:s')
-        ];
-        
-    } catch (Exception $e) {
-        return [
-            'success' => false,
-            'status' => 'error',
-            'message' => DEBUG_MODE ? $e->getMessage() : 'Database connection error',
-            'timestamp' => date('Y-m-d H:i:s')
-        ];
+            'message' => $e->getMessage()
+        ]);
     }
 }
 
@@ -108,33 +80,52 @@ function checkDatabaseStatus() {
  * ตรวจสอบสถานะ LINE OA
  */
 function checkLineStatus() {
+    // ตรวจสอบว่ามีการตั้งค่า LINE หรือไม่
+    if (!defined('LINE_CHANNEL_ACCESS_TOKEN') || empty(LINE_CHANNEL_ACCESS_TOKEN)) {
+        echo json_encode([
+            'success' => false,
+            'status' => 'not_configured',
+            'message' => 'ยังไม่ได้ตั้งค่า LINE OA'
+        ]);
+        return;
+    }
+    
+    // ตรวจสอบการเชื่อมต่อ LINE API
     try {
-        // ตรวจสอบว่ามีการตั้งค่า LINE หรือไม่
-        if (!defined('LINE_CHANNEL_ACCESS_TOKEN') || empty(LINE_CHANNEL_ACCESS_TOKEN)) {
-            return [
+        $curl = curl_init();
+        curl_setopt_array($curl, [
+            CURLOPT_URL => 'https://api.line.me/v2/bot/info',
+            CURLOPT_RETURNTRANSFER => true,
+            CURLOPT_TIMEOUT => 10,
+            CURLOPT_HTTPHEADER => [
+                'Authorization: Bearer ' . LINE_CHANNEL_ACCESS_TOKEN
+            ]
+        ]);
+        
+        $response = curl_exec($curl);
+        $httpCode = curl_getinfo($curl, CURLINFO_HTTP_CODE);
+        curl_close($curl);
+        
+        if ($httpCode === 200) {
+            echo json_encode([
+                'success' => true,
+                'status' => 'active',
+                'message' => 'LINE OA เชื่อมต่อแล้ว'
+            ]);
+        } else {
+            echo json_encode([
                 'success' => false,
-                'status' => 'not_configured',
-                'message' => 'LINE OA not configured',
-                'timestamp' => date('Y-m-d H:i:s')
-            ];
+                'status' => 'configured',
+                'message' => 'ตั้งค่าแล้ว แต่การเชื่อมต่อมีปัญหา'
+            ]);
         }
         
-        // ตรวจสอบการเชื่อมต่อกับ LINE API (ถ้าต้องการ)
-        // สำหรับตอนนี้แสดงสถานะตามการตั้งค่า
-        return [
-            'success' => true,
-            'status' => 'configured',
-            'message' => 'LINE OA configured but not tested',
-            'timestamp' => date('Y-m-d H:i:s')
-        ];
-        
     } catch (Exception $e) {
-        return [
+        echo json_encode([
             'success' => false,
-            'status' => 'error',
-            'message' => DEBUG_MODE ? $e->getMessage() : 'LINE check error',
-            'timestamp' => date('Y-m-d H:i:s')
-        ];
+            'status' => 'configured',
+            'message' => 'ตั้งค่าแล้ว แต่ไม่สามารถทดสอบการเชื่อมต่อได้'
+        ]);
     }
 }
 
@@ -143,81 +134,63 @@ function checkLineStatus() {
  */
 function checkPrinterStatus() {
     try {
-        // ตรวจสอบการตั้งค่าเครื่องพิมพ์จากฐานข้อมูล
         $db = new Database();
         $conn = $db->getConnection();
         
-        // ตรวจสอบว่าตาราง system_settings มีอยู่หรือไม่
-        $tableExists = false;
-        try {
-            $result = $conn->query("SHOW TABLES LIKE 'system_settings'");
-            $tableExists = $result->rowCount() > 0;
-        } catch (Exception $e) {
-            // Table doesn't exist
-        }
-        
-        if (!$tableExists) {
-            return [
-                'success' => false,
-                'status' => 'not_configured',
-                'message' => 'Printer configuration table not available',
-                'timestamp' => date('Y-m-d H:i:s')
-            ];
-        }
-        
+        // ดึงการตั้งค่าเครื่องพิมพ์
         $stmt = $conn->prepare("
-            SELECT setting_value 
-            FROM system_settings 
-            WHERE setting_key = 'printer_enabled'
+            SELECT setting_key, setting_value 
+            FROM payment_settings 
+            WHERE setting_key IN ('printer_enabled', 'printer_ip', 'printer_port')
         ");
         $stmt->execute();
-        $printerEnabled = $stmt->fetchColumn();
+        $settings = $stmt->fetchAll(PDO::FETCH_KEY_PAIR);
         
-        if ($printerEnabled === '1' || $printerEnabled === 'true') {
-            return [
-                'success' => true,
-                'status' => 'configured',
-                'message' => 'Printer configured',
-                'timestamp' => date('Y-m-d H:i:s')
-            ];
-        } else {
-            return [
+        if (!isset($settings['printer_enabled']) || $settings['printer_enabled'] !== '1') {
+            echo json_encode([
+                'success' => false,
+                'status' => 'disabled',
+                'message' => 'เครื่องพิมพ์ไม่ได้เปิดใช้งาน'
+            ]);
+            return;
+        }
+        
+        $printerIP = $settings['printer_ip'] ?? '';
+        $printerPort = $settings['printer_port'] ?? '9100';
+        
+        if (empty($printerIP)) {
+            echo json_encode([
                 'success' => false,
                 'status' => 'not_configured',
-                'message' => 'Printer not configured',
-                'timestamp' => date('Y-m-d H:i:s')
-            ];
+                'message' => 'ยังไม่ได้ตั้งค่า IP เครื่องพิมพ์'
+            ]);
+            return;
+        }
+        
+        // ทดสอบการเชื่อมต่อเครื่องพิมพ์
+        $connection = @fsockopen($printerIP, $printerPort, $errno, $errstr, 5);
+        
+        if ($connection) {
+            fclose($connection);
+            echo json_encode([
+                'success' => true,
+                'status' => 'online',
+                'message' => 'เครื่องพิมพ์พร้อมใช้งาน'
+            ]);
+        } else {
+            echo json_encode([
+                'success' => false,
+                'status' => 'configured',
+                'message' => 'ตั้งค่าแล้ว แต่ไม่สามารถเชื่อมต่อได้'
+            ]);
         }
         
     } catch (Exception $e) {
-        return [
+        echo json_encode([
             'success' => false,
-            'status' => 'not_configured',
-            'message' => 'Printer configuration not available',
-            'timestamp' => date('Y-m-d H:i:s')
-        ];
+            'status' => 'error',
+            'message' => $e->getMessage()
+        ]);
     }
-}
-
-/**
- * ตรวจสอบสถานะโดยรวม
- */
-function getSystemOverallStatus() {
-    $database = checkDatabaseStatus();
-    $line = checkLineStatus();
-    $printer = checkPrinterStatus();
-    
-    $allSuccessful = $database['success'] && $line['success'] && $printer['success'];
-    
-    return [
-        'success' => $allSuccessful,
-        'status' => $allSuccessful ? 'healthy' : 'issues',
-        'components' => [
-            'database' => $database,
-            'line' => $line,
-            'printer' => $printer
-        ],
-        'timestamp' => date('Y-m-d H:i:s')
-    ];
 }
 ?>

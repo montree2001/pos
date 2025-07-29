@@ -1,6 +1,6 @@
 <?php
 /**
- * จัดการเมนูอาหาร
+ * จัดการเมนูอาหาร (แก้ไขแล้ว)
  * Smart Order Management System
  */
 
@@ -12,38 +12,42 @@ require_once '../includes/functions.php';
 require_once '../includes/auth.php';
 
 // ตรวจสอบสิทธิ์
-requireAuth('admin');
+try {
+    requireAuth('admin');
+} catch (Exception $e) {
+    setFlashMessage('error', 'ไม่มีสิทธิ์เข้าถึงหน้านี้');
+    header('Location: ../login.php');
+    exit();
+}
 
 $pageTitle = 'จัดการเมนู';
 
 // จัดการการส่งฟอร์ม
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    if (!verifyCSRFToken($_POST['csrf_token'] ?? '')) {
-        setFlashMessage('error', 'Invalid request');
-        header('Location: menu_management.php');
-        exit();
-    }
-    
-    $action = $_POST['action'] ?? '';
-    
-    if ($action === 'add' || $action === 'edit') {
-        $productId = $_POST['product_id'] ?? null;
-        $categoryId = $_POST['category_id'] ?? '';
-        $name = trim($_POST['name'] ?? '');
-        $description = trim($_POST['description'] ?? '');
-        $price = floatval($_POST['price'] ?? 0);
-        $cost = floatval($_POST['cost'] ?? 0);
-        $preparationTime = intval($_POST['preparation_time'] ?? 5);
-        $isAvailable = isset($_POST['is_available']) ? 1 : 0;
+    try {
+        if (!verifyCSRFToken($_POST['csrf_token'] ?? '')) {
+            throw new Exception('Invalid request token');
+        }
         
-        // Validation
-        $errors = [];
-        if (empty($name)) $errors[] = 'กรุณากรอกชื่อเมนู';
-        if (empty($categoryId)) $errors[] = 'กรุณาเลือกหมวดหมู่';
-        if ($price <= 0) $errors[] = 'กรุณากรอกราคาที่ถูกต้อง';
+        $action = $_POST['action'] ?? '';
         
-        if (empty($errors)) {
-            try {
+        if ($action === 'add' || $action === 'edit') {
+            $productId = $_POST['product_id'] ?? null;
+            $categoryId = $_POST['category_id'] ?? '';
+            $name = trim($_POST['name'] ?? '');
+            $description = trim($_POST['description'] ?? '');
+            $price = floatval($_POST['price'] ?? 0);
+            $cost = floatval($_POST['cost'] ?? 0);
+            $preparationTime = intval($_POST['preparation_time'] ?? 5);
+            $isAvailable = isset($_POST['is_available']) ? 1 : 0;
+            
+            // Validation
+            $errors = [];
+            if (empty($name)) $errors[] = 'กรุณากรอกชื่อเมนู';
+            if (empty($categoryId)) $errors[] = 'กรุณาเลือกหมวดหมู่';
+            if ($price <= 0) $errors[] = 'กรุณากรอกราคาที่ถูกต้อง';
+            
+            if (empty($errors)) {
                 $db = new Database();
                 $conn = $db->getConnection();
                 
@@ -59,14 +63,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                             $oldImageStmt = $conn->prepare("SELECT image FROM products WHERE product_id = ?");
                             $oldImageStmt->execute([$productId]);
                             $oldImage = $oldImageStmt->fetchColumn();
-                            if ($oldImage) {
-                                deleteFile(MENU_IMAGE_PATH . $oldImage);
+                            if ($oldImage && file_exists(MENU_IMAGE_PATH . $oldImage)) {
+                                unlink(MENU_IMAGE_PATH . $oldImage);
                             }
                         }
                     } else {
-                        setFlashMessage('error', $uploadResult['message']);
-                        header('Location: menu_management.php');
-                        exit();
+                        throw new Exception($uploadResult['message']);
                     }
                 }
                 
@@ -101,20 +103,21 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     writeLog("Updated menu item ID: $productId by " . getCurrentUser()['username']);
                 }
                 
-            } catch (Exception $e) {
-                setFlashMessage('error', 'เกิดข้อผิดพลาด: ' . $e->getMessage());
-                writeLog("Error managing menu: " . $e->getMessage());
+            } else {
+                setFlashMessage('error', implode('<br>', $errors));
             }
-        } else {
-            setFlashMessage('error', implode('<br>', $errors));
         }
+        
+    } catch (Exception $e) {
+        setFlashMessage('error', 'เกิดข้อผิดพลาด: ' . $e->getMessage());
+        writeLog("Error managing menu: " . $e->getMessage());
     }
     
     header('Location: menu_management.php');
     exit();
 }
 
-// ดึงข้อมูลหมวดหมู่
+// ดึงข้อมูลหมวดหมู่และเมนู
 try {
     $db = new Database();
     $conn = $db->getConnection();
@@ -137,7 +140,7 @@ try {
     writeLog("Error loading menu data: " . $e->getMessage());
     $categories = [];
     $menuItems = [];
-    setFlashMessage('error', 'ไม่สามารถโหลดข้อมูลได้');
+    setFlashMessage('error', 'ไม่สามารถโหลดข้อมูลได้: ' . $e->getMessage());
 }
 
 require_once '../includes/header.php';
@@ -479,6 +482,12 @@ function openEditModal(productId) {
                 $('#imagePlaceholder').show();
             }
         }
+    }).fail(function() {
+        Swal.fire({
+            icon: 'error',
+            title: 'เกิดข้อผิดพลาด',
+            text: 'ไม่สามารถโหลดข้อมูลสินค้าได้'
+        });
     });
 }
 
@@ -493,10 +502,16 @@ function toggleAvailability(productId, isAvailable) {
             is_available: isAvailable
         }, function(response) {
             if (response.success) {
-                showSuccess(action + 'สำเร็จ', function() {
+                showSuccess(response.message, function() {
                     location.reload();
                 });
             }
+        }).fail(function() {
+            Swal.fire({
+                icon: 'error',
+                title: 'เกิดข้อผิดพลาด',
+                text: 'ไม่สามารถเปลี่ยนสถานะได้'
+            });
         });
     });
 }
@@ -509,10 +524,16 @@ function deleteMenu(productId) {
             product_id: productId
         }, function(response) {
             if (response.success) {
-                showSuccess('ลบเมนูสำเร็จ', function() {
+                showSuccess(response.message, function() {
                     location.reload();
                 });
             }
+        }).fail(function() {
+            Swal.fire({
+                icon: 'error',
+                title: 'เกิดข้อผิดพลาด',
+                text: 'ไม่สามารถลบเมนูได้'
+            });
         });
     });
 }

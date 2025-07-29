@@ -1,0 +1,536 @@
+/**
+ * Mobile CSS
+ * Smart Order Management System
+ * รองรับการใช้งานบนมือถือและแท็บเล็ต
+ */
+
+/* Mobile-First Design */
+@media (max-width: 767.98px) {
+    
+    /* Container และ Layout */
+    .container-fluid {
+        padding-left: 10px !important;
+        padding-right: 10px !important;
+    }
+    
+    .main-content {
+        margin: 10px 5px !important;
+        padding: 15px !important;
+        border-radius: 8px !important;
+    }
+    
+    /* Navigation */
+    .navbar-brand {
+        font-size: 1.1rem !important;
+    }
+    
+    .navbar-nav .nav-link {
+        padding: 8px 12px !important;
+        font-size: 0.9rem !important;
+    }
+    
+    /* Sidebar */
+    .sidebar {
+        position: static !important;
+        min-height: auto !important;
+        box-shadow: none !important;
+        background: transparent !important;
+    }
+    
+    .sidebar .nav-link {
+        padding: 10px 15px !important;
+        font-size: 0.85rem !important;
+        margin: 2px 5px !important;
+    }
+    
+    .nav-header {
+        font-size: 0.7rem !important;
+        padding: 8px 15px !important;
+    }
+    
+    /* Cards และ Stats */
+    .stats-card {
+        margin-bottom: 15px !important;
+        padding: 15px !important;
+    }
+    
+    .stats-card .stats-number {
+        font-size: 1.5rem !important;
+    }
+    
+    .stats-card .stats-icon {
+        font-size: 2rem !important;
+    }
+    
+    .card {
+        margin-bottom: 15px !important;
+    }
+    
+    .card-header {
+        padding: 12px 15px !important;
+        font-size: 0.9rem !important;
+    }
+    
+    .card-body {
+        padding: 15px !important;
+    }
+    
+    /* Tables */
+    .table {
+        font-size: 0.8rem !important;
+    }
+    
+    .table td,
+    .table th {
+        padding: 8px 4px !important;
+        vertical-align: middle !important;
+    }
+    
+    /* ซ่อนคอลัมน์ที่ไม่สำคัญบนมือถือ */
+    .table .d-none-mobile {
+        display: none !important;
+    }
+    
+    /* DataTable */
+    .dataTables_wrapper .dataTables_length,
+    .dataTables_wrapper .dataTables_filter {
+        margin-bottom: 10px !important;
+    }
+    
+    .dataTables_wrapper .dataTables_info,
+    .dataTables_wrapper .dataTables_paginate {
+        margin-top: 10px !important;
+    }
+    
+    /* Buttons */
+    .btn {
+        padding: 8px 12px !important;
+        font-size: 0.85rem !important;
+        margin: 2px !important;
+    }
+    
+    .btn-group .btn {
+        margin: 0 !important;
+    }
+    
+    .btn-group-sm .btn {
+        padding: 4px 8px !important;
+        font-size: 0.75rem !important;
+    }
+    
+    /* ปุ่มขนาดใหญ่สำหรับ Touch */
+    .btn-touch {
+        min-height: 48px !important;
+        min-width: 48px !important;
+        padding: 12px 16px !important;
+        font-size: 1rem !important;
+    }
+    
+    /* Forms */
+    .form-control,
+    .form-select {
+        padding: 12px !important;
+        font-size: 1rem !important;
+        border-radius: 8px !important;
+    }
+    
+    .form-label {
+        font-size: 0.9rem !important;
+        margin-bottom: 6px !important;
+    }
+    
+    .input-group .form-control {
+        padding: 10px 12px !important;
+    }
+    
+    /* Modal */
+    .modal-dialog {
+        margin: 10px !important;
+        max-width: calc(100% - 20px) !important;
+    }
+    
+    .modal-header {
+        padding: 15px !important;
+    }
+    
+    .modal-body {
+        padding: 15px !important;
+    }
+    
+    .modal-footer {
+        padding: 15px !important;
+        flex-direction: column !important;
+    }
+    
+    .modal-footer .btn {
+        width: 100% !important;
+        margin: 5px 0 !important;
+    }
+    
+    /* Typography */
+    h1, .h1 {
+        font-size: 1.8rem !important;
+    }
+    
+    h2, .h2 {
+        font-size: 1.5rem !important;
+    }
+    
+    h3, .h3 {
+        font-size: 1.3rem !important;
+    }
+    
+    h4, .h4 {
+        font-size: 1.1rem !important;
+    }
+    
+    h5, .h5 {
+        font-size: 1rem !important;
+    }
+    
+    /* Badges */
+    .badge {
+        font-size: 0.7rem !important;
+        padding: 4px 6px !important;
+    }
+    
+    /* Images */
+    .img-thumbnail {
+        max-width: 40px !important;
+        max-height: 40px !important;
+    }
+    
+    /* Pagination */
+    .pagination {
+        justify-content: center !important;
+    }
+    
+    .pagination .page-link {
+        padding: 8px 12px !important;
+        font-size: 0.85rem !important;
+    }
+    
+    /* Alerts */
+    .alert {
+        padding: 10px 15px !important;
+        font-size: 0.9rem !important;
+        margin-bottom: 15px !important;
+    }
+    
+    /* Dropdowns */
+    .dropdown-menu {
+        font-size: 0.9rem !important;
+        min-width: 200px !important;
+    }
+    
+    .dropdown-item {
+        padding: 10px 15px !important;
+    }
+    
+    /* Progress bars */
+    .progress {
+        height: 20px !important;
+    }
+    
+    /* List groups */
+    .list-group-item {
+        padding: 12px 15px !important;
+        font-size: 0.9rem !important;
+    }
+    
+    /* Utilities */
+    .text-nowrap-mobile {
+        white-space: nowrap !important;
+    }
+    
+    .overflow-scroll-mobile {
+        overflow-x: auto !important;
+        -webkit-overflow-scrolling: touch !important;
+    }
+}
+
+/* Tablet (768px - 1024px) */
+@media (min-width: 768px) and (max-width: 1024px) {
+    
+    .container-fluid {
+        padding-left: 15px !important;
+        padding-right: 15px !important;
+    }
+    
+    .main-content {
+        margin: 15px !important;
+        padding: 25px !important;
+    }
+    
+    .table {
+        font-size: 0.9rem !important;
+    }
+    
+    .btn {
+        padding: 10px 16px !important;
+        font-size: 0.9rem !important;
+    }
+    
+    .stats-card .stats-number {
+        font-size: 1.8rem !important;
+    }
+    
+    .modal-dialog {
+        max-width: 90% !important;
+        margin: 30px auto !important;
+    }
+}
+
+/* POS/Touch Interface */
+.pos-interface {
+    /* ออกแบบสำหรับ POS โดยเฉพาะ */
+}
+
+.pos-interface .btn {
+    min-height: 60px !important;
+    font-size: 1.1rem !important;
+    border-radius: 12px !important;
+    margin: 5px !important;
+}
+
+.pos-interface .card {
+    border-radius: 15px !important;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.1) !important;
+}
+
+.pos-interface .form-control {
+    font-size: 1.2rem !important;
+    padding: 15px !important;
+    border-radius: 12px !important;
+}
+
+/* Menu Grid สำหรับลูกค้า */
+.menu-grid {
+    display: grid !important;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)) !important;
+    gap: 15px !important;
+    padding: 15px !important;
+}
+
+@media (max-width: 767.98px) {
+    .menu-grid {
+        grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)) !important;
+        gap: 10px !important;
+        padding: 10px !important;
+    }
+}
+
+.menu-item-card {
+    border-radius: 15px !important;
+    overflow: hidden !important;
+    transition: transform 0.2s ease !important;
+    cursor: pointer !important;
+}
+
+.menu-item-card:hover {
+    transform: translateY(-2px) !important;
+    box-shadow: 0 6px 20px rgba(0,0,0,0.15) !important;
+}
+
+.menu-item-card .card-img-top {
+    height: 200px !important;
+    object-fit: cover !important;
+}
+
+@media (max-width: 767.98px) {
+    .menu-item-card .card-img-top {
+        height: 150px !important;
+    }
+}
+
+/* Queue Display */
+.queue-display {
+    text-align: center !important;
+    padding: 30px !important;
+}
+
+.queue-display .queue-number {
+    font-size: 4rem !important;
+    font-weight: bold !important;
+    color: var(--primary-color) !important;
+    margin: 20px 0 !important;
+}
+
+@media (max-width: 767.98px) {
+    .queue-display .queue-number {
+        font-size: 2.5rem !important;
+        margin: 15px 0 !important;
+    }
+}
+
+.queue-display .status-badge {
+    font-size: 1.2rem !important;
+    padding: 10px 20px !important;
+    border-radius: 25px !important;
+}
+
+@media (max-width: 767.98px) {
+    .queue-display .status-badge {
+        font-size: 1rem !important;
+        padding: 8px 16px !important;
+    }
+}
+
+/* Kitchen Display */
+.kitchen-display .order-card {
+    margin-bottom: 15px !important;
+    border-left: 5px solid var(--primary-color) !important;
+}
+
+.kitchen-display .order-header {
+    background: linear-gradient(135deg, var(--primary-color), #6366f1) !important;
+    color: white !important;
+    padding: 15px !important;
+    border-radius: 8px 8px 0 0 !important;
+}
+
+.kitchen-display .order-items {
+    padding: 15px !important;
+}
+
+.kitchen-display .order-item {
+    display: flex !important;
+    justify-content: space-between !important;
+    align-items: center !important;
+    padding: 8px 0 !important;
+    border-bottom: 1px solid #eee !important;
+}
+
+/* Animations */
+@keyframes fadeInUp {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.fade-in-up {
+    animation: fadeInUp 0.3s ease-out !important;
+}
+
+@keyframes pulse {
+    0% {
+        box-shadow: 0 0 0 0 rgba(79, 70, 229, 0.4);
+    }
+    70% {
+        box-shadow: 0 0 0 10px rgba(79, 70, 229, 0);
+    }
+    100% {
+        box-shadow: 0 0 0 0 rgba(79, 70, 229, 0);
+    }
+}
+
+.pulse-animation {
+    animation: pulse 2s infinite !important;
+}
+
+/* Loading States */
+.loading-skeleton {
+    background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%) !important;
+    background-size: 200% 100% !important;
+    animation: loading 1.5s infinite !important;
+    border-radius: 8px !important;
+}
+
+@keyframes loading {
+    0% {
+        background-position: 200% 0;
+    }
+    100% {
+        background-position: -200% 0;
+    }
+}
+
+/* Custom Scrollbar */
+::-webkit-scrollbar {
+    width: 8px !important;
+    height: 8px !important;
+}
+
+::-webkit-scrollbar-track {
+    background: #f1f1f1 !important;
+    border-radius: 4px !important;
+}
+
+::-webkit-scrollbar-thumb {
+    background: #c1c1c1 !important;
+    border-radius: 4px !important;
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: #a8a8a8 !important;
+}
+
+/* Touch Feedback */
+.btn:active,
+.card:active,
+.menu-item-card:active {
+    transform: scale(0.98) !important;
+    transition: transform 0.1s ease !important;
+}
+
+/* Accessibility */
+@media (prefers-reduced-motion: reduce) {
+    * {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+    }
+}
+
+/* High contrast mode */
+@media (prefers-contrast: high) {
+    .card {
+        border: 2px solid #000 !important;
+    }
+    
+    .btn {
+        border: 2px solid currentColor !important;
+    }
+}
+
+/* Dark mode support */
+@media (prefers-color-scheme: dark) {
+    .loading-skeleton {
+        background: linear-gradient(90deg, #2a2a2a 25%, #3a3a3a 50%, #2a2a2a 75%) !important;
+    }
+    
+    ::-webkit-scrollbar-track {
+        background: #2a2a2a !important;
+    }
+    
+    ::-webkit-scrollbar-thumb {
+        background: #555 !important;
+    }
+}
+
+/* Print styles */
+@media print {
+    .sidebar,
+    .navbar,
+    .btn,
+    .modal,
+    .alert {
+        display: none !important;
+    }
+    
+    .main-content {
+        margin: 0 !important;
+        padding: 0 !important;
+        box-shadow: none !important;
+    }
+    
+    .card {
+        border: 1px solid #000 !important;
+        break-inside: avoid !important;
+    }
+}
