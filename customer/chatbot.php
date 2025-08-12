@@ -1,6 +1,6 @@
 <?php
 /**
- * หน้า AI Chatbot
+ * Chatbot with Deepseek API Integration
  * Smart Order Management System
  */
 
@@ -10,127 +10,99 @@ require_once '../config/database.php';
 require_once '../config/session.php';
 require_once '../includes/functions.php';
 
+// Check if customer is logged in (optional for chatbot)
+$customerId = $_SESSION['customer_id'] ?? null;
+
+// Generate unique session ID for chatbot
+$chatbotSessionId = 'chatbot_' . session_id() . '_' . time();
+
 $pageTitle = 'AI Assistant';
-$pageDescription = 'แชทกับ AI เพื่อสั่งอาหารและสอบถามข้อมูล';
-
-// สร้าง session ID สำหรับ chatbot
-if (!SessionManager::has('chatbot_session_id')) {
-    SessionManager::set('chatbot_session_id', uniqid('chat_', true));
-}
-$chatbotSessionId = SessionManager::get('chatbot_session_id');
 ?>
-
 <!DOCTYPE html>
 <html lang="th">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title><?php echo $pageTitle; ?> - <?php echo SITE_NAME; ?></title>
-    <meta name="description" content="<?php echo $pageDescription; ?>">
+    <title><?php echo $pageTitle . ' - ' . SITE_NAME; ?></title>
     
-    <!-- Bootstrap 5 -->
+    <!-- CSS -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
-    <!-- Font Awesome -->
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" rel="stylesheet">
-    <!-- Animate.css -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css" rel="stylesheet">
+    <link href="../assets/css/customer.css" rel="stylesheet">
     
     <style>
         :root {
             --primary-color: #4f46e5;
             --secondary-color: #10b981;
-            --bot-color: #6366f1;
-            --user-color: #059669;
-            --light-bg: #f8fafc;
-            --white: #ffffff;
-            --border-color: #e5e7eb;
-            --text-color: #1f2937;
+            --accent-color: #f59e0b;
+            --text-dark: #1f2937;
             --text-muted: #6b7280;
-            --border-radius: 16px;
-            --box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+            --border-color: #e5e7eb;
+            --chat-bg: #f8fafc;
+            --white: #ffffff;
+            --gradient-primary: linear-gradient(135deg, #4f46e5, #7c3aed);
+            --gradient-secondary: linear-gradient(135deg, #10b981, #059669);
             --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            --shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+            --shadow-lg: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
         }
         
         body {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            color: var(--text-color);
-            line-height: 1.6;
+            background: var(--chat-bg);
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            margin: 0;
+            padding: 0;
             height: 100vh;
             overflow: hidden;
         }
         
-        /* Navigation */
-        .navbar-custom {
-            background: var(--white);
-            box-shadow: var(--box-shadow);
-            padding: 1rem 0;
-            position: relative;
-            z-index: 1000;
-        }
-        
-        .navbar-brand {
-            font-size: 1.5rem;
-            font-weight: 700;
-            color: var(--primary-color) !important;
-        }
-        
-        /* Main Container */
+        /* Chat Container */
         .chat-container {
-            height: calc(100vh - 76px);
+            height: 100vh;
             display: flex;
             flex-direction: column;
-            background: var(--white);
+            max-width: 100%;
             margin: 0 auto;
-            max-width: 1200px;
-            box-shadow: var(--box-shadow);
+            background: var(--white);
+            box-shadow: var(--shadow-lg);
         }
         
         /* Chat Header */
         .chat-header {
-            background: linear-gradient(135deg, var(--bot-color), #8b5cf6);
+            background: var(--gradient-primary);
             color: white;
             padding: 1.5rem 2rem;
             display: flex;
             align-items: center;
+            justify-content: space-between;
+            flex-shrink: 0;
+        }
+        
+        .chat-header h1 {
+            margin: 0;
+            font-size: 1.5rem;
+            font-weight: 700;
+        }
+        
+        .header-actions {
+            display: flex;
             gap: 1rem;
         }
         
-        .bot-avatar {
-            width: 50px;
-            height: 50px;
+        .header-btn {
             background: rgba(255, 255, 255, 0.2);
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 1.5rem;
+            border: none;
+            color: white;
+            border-radius: 12px;
+            padding: 8px 12px;
+            transition: var(--transition);
+            backdrop-filter: blur(10px);
         }
         
-        .bot-info h3 {
-            margin: 0;
-            font-size: 1.25rem;
-        }
-        
-        .bot-status {
-            font-size: 0.875rem;
-            opacity: 0.9;
-            display: flex;
-            align-items: center;
-            gap: 0.5rem;
-        }
-        
-        .status-dot {
-            width: 8px;
-            height: 8px;
-            background: #22c55e;
-            border-radius: 50%;
-            animation: pulse 2s infinite;
-        }
-        
-        @keyframes pulse {
-            0%, 100% { opacity: 1; }
-            50% { opacity: 0.5; }
+        .header-btn:hover {
+            background: rgba(255, 255, 255, 0.3);
+            transform: translateY(-1px);
         }
         
         /* Chat Messages */
@@ -138,44 +110,46 @@ $chatbotSessionId = SessionManager::get('chatbot_session_id');
             flex: 1;
             overflow-y: auto;
             padding: 2rem;
-            background: var(--light-bg);
+            background: var(--chat-bg);
             scroll-behavior: smooth;
         }
         
+        .welcome-message {
+            text-align: center;
+            padding: 3rem 2rem;
+            background: var(--white);
+            border-radius: 20px;
+            box-shadow: var(--shadow);
+            margin-bottom: 2rem;
+            animation: fadeInUp 0.6s ease-out;
+        }
+        
+        .welcome-message i {
+            font-size: 3rem;
+            color: var(--primary-color);
+            margin-bottom: 1rem;
+        }
+        
+        .welcome-message h4 {
+            color: var(--text-dark);
+            font-weight: 700;
+            margin-bottom: 0.5rem;
+        }
+        
+        .welcome-message p {
+            color: var(--text-muted);
+            margin-bottom: 2rem;
+        }
+        
+        /* Message Bubbles */
         .message {
             display: flex;
             margin-bottom: 1.5rem;
-            animation: messageSlide 0.3s ease-out;
-        }
-        
-        @keyframes messageSlide {
-            from { opacity: 0; transform: translateY(20px); }
-            to { opacity: 1; transform: translateY(0); }
+            animation: fadeInUp 0.4s ease-out;
         }
         
         .message.user {
             justify-content: flex-end;
-        }
-        
-        .message-content {
-            max-width: 70%;
-            padding: 1rem 1.5rem;
-            border-radius: 20px;
-            position: relative;
-            word-wrap: break-word;
-        }
-        
-        .message.bot .message-content {
-            background: var(--white);
-            color: var(--text-color);
-            border: 2px solid var(--border-color);
-            margin-left: 60px;
-        }
-        
-        .message.user .message-content {
-            background: linear-gradient(135deg, var(--user-color), #047857);
-            color: white;
-            margin-right: 60px;
         }
         
         .message-avatar {
@@ -185,29 +159,37 @@ $chatbotSessionId = SessionManager::get('chatbot_session_id');
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 1.25rem;
+            margin: 0 0.75rem;
             flex-shrink: 0;
         }
         
-        .message.bot .message-avatar {
-            background: linear-gradient(135deg, var(--bot-color), #8b5cf6);
+        .message.user .message-avatar {
+            background: var(--gradient-primary);
             color: white;
-            position: absolute;
-            left: 10px;
-            top: 0;
         }
         
-        .message.user .message-avatar {
-            background: linear-gradient(135deg, var(--user-color), #047857);
+        .message.bot .message-avatar {
+            background: var(--gradient-secondary);
             color: white;
-            position: absolute;
-            right: 10px;
-            top: 0;
+        }
+        
+        .message-content {
+            max-width: 70%;
+            background: var(--white);
+            border-radius: 18px;
+            padding: 1rem 1.25rem;
+            box-shadow: var(--shadow);
+            position: relative;
+        }
+        
+        .message.user .message-content {
+            background: var(--gradient-primary);
+            color: white;
         }
         
         .message-time {
             font-size: 0.75rem;
-            opacity: 0.7;
+            opacity: 0.6;
             margin-top: 0.5rem;
         }
         
@@ -220,78 +202,79 @@ $chatbotSessionId = SessionManager::get('chatbot_session_id');
         }
         
         .quick-reply {
-            background: var(--light-bg);
-            border: 2px solid var(--border-color);
+            background: rgba(79, 70, 229, 0.1);
+            color: var(--primary-color);
+            border: 1px solid rgba(79, 70, 229, 0.3);
             border-radius: 20px;
-            padding: 8px 16px;
+            padding: 6px 12px;
             font-size: 0.875rem;
-            cursor: pointer;
             transition: var(--transition);
+            cursor: pointer;
         }
         
         .quick-reply:hover {
             background: var(--primary-color);
             color: white;
-            border-color: var(--primary-color);
+            transform: translateY(-1px);
         }
         
-        /* Product Cards in Chat */
-        .product-card-chat {
-            background: var(--white);
-            border: 2px solid var(--border-color);
-            border-radius: 12px;
-            padding: 1rem;
-            margin: 0.5rem 0;
-            display: flex;
-            gap: 1rem;
-            transition: var(--transition);
-        }
-        
-        .product-card-chat:hover {
-            border-color: var(--secondary-color);
-            transform: translateY(-2px);
-        }
-        
-        .product-image-chat {
-            width: 60px;
-            height: 60px;
-            background: var(--light-bg);
-            border-radius: 8px;
+        /* Typing Indicator */
+        .typing-indicator {
             display: flex;
             align-items: center;
+            margin-bottom: 1.5rem;
+            animation: fadeInUp 0.4s ease-out;
+        }
+        
+        .typing-dots {
+            display: flex;
+            gap: 4px;
+            margin-right: 0.75rem;
+        }
+        
+        .typing-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: var(--text-muted);
+            animation: typingDot 1.4s infinite ease-in-out;
+        }
+        
+        .typing-dot:nth-child(1) { animation-delay: -0.32s; }
+        .typing-dot:nth-child(2) { animation-delay: -0.16s; }
+        
+        @keyframes typingDot {
+            0%, 80%, 100% { transform: scale(0); opacity: 0.5; }
+            40% { transform: scale(1); opacity: 1; }
+        }
+        
+        /* Action Chips */
+        .chat-actions {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.75rem;
             justify-content: center;
-            color: var(--text-muted);
-            flex-shrink: 0;
         }
         
-        .product-info-chat {
-            flex: 1;
-        }
-        
-        .product-name-chat {
-            font-weight: 600;
-            margin-bottom: 0.25rem;
-        }
-        
-        .product-price-chat {
-            color: var(--secondary-color);
-            font-weight: 700;
-            margin-bottom: 0.5rem;
-        }
-        
-        .add-to-cart-chat {
-            background: linear-gradient(135deg, var(--secondary-color), #059669);
-            color: white;
-            border: none;
-            border-radius: 8px;
-            padding: 6px 12px;
-            font-size: 0.875rem;
+        .action-chip {
+            background: var(--white);
+            border: 2px solid var(--border-color);
+            color: var(--text-dark);
+            border-radius: 25px;
+            padding: 10px 16px;
+            font-weight: 500;
             transition: var(--transition);
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
         }
         
-        .add-to-cart-chat:hover {
-            transform: translateY(-1px);
-            box-shadow: 0 4px 15px rgba(16, 185, 129, 0.3);
+        .action-chip:hover {
+            border-color: var(--primary-color);
+            color: var(--primary-color);
+            transform: translateY(-2px);
+            box-shadow: var(--shadow);
         }
         
         /* Chat Input */
@@ -348,105 +331,64 @@ $chatbotSessionId = SessionManager::get('chatbot_session_id');
             cursor: not-allowed;
         }
         
-        /* Action Buttons */
-        .chat-actions {
-            display: flex;
-            gap: 0.5rem;
-            margin-bottom: 1rem;
-        }
-        
-        .action-chip {
-            background: var(--white);
-            border: 2px solid var(--border-color);
-            border-radius: 20px;
-            padding: 6px 12px;
-            font-size: 0.875rem;
-            cursor: pointer;
-            transition: var(--transition);
-        }
-        
-        .action-chip:hover {
-            background: var(--primary-color);
+        /* Cart Badge */
+        .cart-badge {
+            position: absolute;
+            top: -8px;
+            right: -8px;
+            background: var(--accent-color);
             color: white;
-            border-color: var(--primary-color);
-        }
-        
-        /* Typing Indicator */
-        .typing-indicator {
+            border-radius: 50%;
+            width: 20px;
+            height: 20px;
+            font-size: 0.75rem;
             display: flex;
             align-items: center;
-            gap: 0.5rem;
-            padding: 1rem 1.5rem;
-            background: var(--white);
-            border: 2px solid var(--border-color);
-            border-radius: 20px;
-            margin-left: 60px;
-            margin-bottom: 1.5rem;
+            justify-content: center;
+            font-weight: 700;
         }
         
-        .typing-dots {
-            display: flex;
-            gap: 4px;
-        }
-        
-        .typing-dot {
-            width: 8px;
-            height: 8px;
-            background: var(--text-muted);
-            border-radius: 50%;
-            animation: typingDot 1.4s infinite;
-        }
-        
-        .typing-dot:nth-child(2) { animation-delay: 0.2s; }
-        .typing-dot:nth-child(3) { animation-delay: 0.4s; }
-        
-        @keyframes typingDot {
-            0%, 60%, 100% { transform: translateY(0); }
-            30% { transform: translateY(-10px); }
-        }
-        
-        /* Welcome Message */
-        .welcome-message {
-            text-align: center;
-            padding: 3rem 2rem;
-            color: var(--text-muted);
-        }
-        
-        .welcome-message i {
-            font-size: 4rem;
-            margin-bottom: 1rem;
-            color: var(--bot-color);
-        }
-        
-        /* Mobile Responsive */
+        /* Responsive */
         @media (max-width: 768px) {
-            .chat-container {
-                margin: 0;
-                height: calc(100vh - 60px);
+            .chat-header {
+                padding: 1rem 1.5rem;
             }
             
-            .chat-header {
-                padding: 1rem;
+            .chat-header h1 {
+                font-size: 1.25rem;
             }
             
             .chat-messages {
-                padding: 1rem;
+                padding: 1.5rem;
+            }
+            
+            .chat-input {
+                padding: 1rem 1.5rem;
             }
             
             .message-content {
                 max-width: 85%;
             }
             
-            .chat-input {
-                padding: 1rem;
+            .welcome-message {
+                padding: 2rem 1.5rem;
             }
             
-            .message.bot .message-content {
-                margin-left: 50px;
+            .action-chip {
+                font-size: 0.875rem;
+                padding: 8px 12px;
             }
-            
-            .message.user .message-content {
-                margin-right: 50px;
+        }
+        
+        /* Animations */
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
             }
         }
         
@@ -456,61 +398,43 @@ $chatbotSessionId = SessionManager::get('chatbot_session_id');
         }
         
         .chat-messages::-webkit-scrollbar-track {
-            background: var(--light-bg);
-        }
-        
-        .chat-messages::-webkit-scrollbar-thumb {
             background: var(--border-color);
             border-radius: 3px;
         }
         
-        .chat-messages::-webkit-scrollbar-thumb:hover {
+        .chat-messages::-webkit-scrollbar-thumb {
             background: var(--text-muted);
+            border-radius: 3px;
+        }
+        
+        .chat-messages::-webkit-scrollbar-thumb:hover {
+            background: var(--text-dark);
         }
     </style>
 </head>
 <body>
-    <!-- Navigation -->
-    <nav class="navbar navbar-custom">
-        <div class="container">
-            <a class="navbar-brand" href="index.php">
-                <i class="fas fa-arrow-left me-2"></i>
-                กลับหน้าหลัก
-            </a>
-            
-            <div class="d-flex align-items-center gap-3">
-                <a href="menu.php" class="btn btn-outline-primary">
-                    <i class="fas fa-utensils me-2"></i>
-                    <span class="d-none d-sm-inline">เมนู</span>
-                </a>
-                
-                <a href="cart.php" class="btn btn-outline-secondary">
-                    <i class="fas fa-shopping-cart me-2"></i>
-                    <span class="d-none d-sm-inline">ตะกร้า</span>
-                    <span id="cartBadge" class="badge bg-danger ms-1" style="display: none;">0</span>
-                </a>
-            </div>
-        </div>
-    </nav>
-    
-    <!-- Chat Container -->
     <div class="chat-container">
         <!-- Chat Header -->
         <div class="chat-header">
-            <div class="bot-avatar">
-                <i class="fas fa-robot"></i>
-            </div>
-            <div class="bot-info">
-                <h3>AI Assistant</h3>
-                <div class="bot-status">
-                    <span class="status-dot"></span>
-                    <span>ออนไลน์ - พร้อมช่วยเหลือคุณ</span>
+            <div class="d-flex align-items-center">
+                <i class="fas fa-robot me-3" style="font-size: 1.5rem;"></i>
+                <div>
+                    <h1>AI Assistant</h1>
+                    <small style="opacity: 0.8;">ยินดีให้บริการ 24/7</small>
                 </div>
             </div>
-            <div class="ms-auto">
-                <button class="btn btn-light btn-sm" onclick="clearChat()">
-                    <i class="fas fa-trash me-2"></i>ล้างการสนทนา
+            
+            <div class="header-actions">
+                <button class="header-btn" onclick="clearChat()" title="ล้างการสนทนา">
+                    <i class="fas fa-trash"></i>
                 </button>
+                <a href="index.php" class="header-btn" title="กลับหน้าหลัก">
+                    <i class="fas fa-home"></i>
+                </a>
+                <a href="cart.php" class="header-btn position-relative" title="ตะกร้าสินค้า">
+                    <i class="fas fa-shopping-cart"></i>
+                    <span id="cartBadge" class="cart-badge" style="display: none;">0</span>
+                </a>
             </div>
         </div>
         
@@ -518,7 +442,7 @@ $chatbotSessionId = SessionManager::get('chatbot_session_id');
         <div class="chat-messages" id="chatMessages">
             <div class="welcome-message">
                 <i class="fas fa-comments"></i>
-                <h4>สวัสดีค่ะ! ยินดีต้อนรับ</h4>
+                <h4>👋 ยินดีต้อนรับ</h4>
                 <p>ฉันคือ AI Assistant ของร้าน พร้อมช่วยคุณสั่งอาหารและตอบคำถามต่างๆ</p>
                 
                 <div class="chat-actions">
@@ -565,13 +489,6 @@ $chatbotSessionId = SessionManager::get('chatbot_session_id');
         // Initialize chat
         let messageHistory = [];
         let isTyping = false;
-        
-        // Quick messages templates
-        const quickReplies = {
-            'menu': ['ข้าวผัด', 'ก๋วยเตี๋ยว', 'เครื่องดื่ม', 'ของหวาน', 'ดูเมนูทั้งหมด'],
-            'recommendation': ['อาหารยอดนิยม', 'ราคาประหยัด', 'อาหารใหม่', 'เมนูแนะนำ'],
-            'help': ['วิธีการสั่ง', 'การชำระเงิน', 'เวลาเตรียม', 'ติดต่อร้าน']
-        };
         
         // Send message
         function sendMessage() {
@@ -670,12 +587,17 @@ $chatbotSessionId = SessionManager::get('chatbot_session_id');
             typingElement.className = 'typing-indicator';
             typingElement.id = 'typingIndicator';
             typingElement.innerHTML = `
-                <div class="typing-dots">
-                    <div class="typing-dot"></div>
-                    <div class="typing-dot"></div>
-                    <div class="typing-dot"></div>
+                <div class="message-avatar">
+                    <i class="fas fa-robot"></i>
                 </div>
-                <span>AI กำลังพิมพ์...</span>
+                <div class="message-content">
+                    <div class="typing-dots">
+                        <div class="typing-dot"></div>
+                        <div class="typing-dot"></div>
+                        <div class="typing-dot"></div>
+                    </div>
+                    <span>AI กำลังพิมพ์...</span>
+                </div>
             `;
             
             messagesContainer.appendChild(typingElement);
@@ -691,23 +613,123 @@ $chatbotSessionId = SessionManager::get('chatbot_session_id');
             isTyping = false;
         }
         
-        // Send to AI
+        // Send to Deepseek AI
         function sendToAI(message) {
-            // Simulate AI processing time
-            const processingTime = Math.random() * 2000 + 1000; // 1-3 seconds
-            
-            setTimeout(() => {
+            // เตรียมข้อมูล context สำหรับ AI
+            const systemMessage = `คุณคือ AI Assistant ของร้านอาหาร ชื่อว่า "Smart Order Assistant" 
+คุณสามารถ:
+- แนะนำเมนูอาหาร
+- ตอบคำถามเกี่ยวกับราคา เวลาเตรียม
+- ช่วยลูกค้าสั่งอาหาร
+- แจ้งสถานะคิว
+- ให้ข้อมูลการชำระเงิน
+
+ตอบเป็นภาษาไทยเท่านั้น พูดจาสุภาพและเป็นมิตร ใช้อีโมจิให้เหมาะสม`;
+
+            // สร้าง messages array สำหรับ API
+            const messages = [
+                {
+                    "role": "system",
+                    "content": systemMessage
+                }
+            ];
+
+            // เพิ่มประวัติการสนทนา (เก็บเฉพาะ 10 ข้อความล่าสุด)
+            const recentHistory = messageHistory.slice(-10);
+            recentHistory.forEach(item => {
+                if (item.type === 'user') {
+                    messages.push({
+                        "role": "user",
+                        "content": item.content
+                    });
+                } else if (item.type === 'bot') {
+                    messages.push({
+                        "role": "assistant", 
+                        "content": item.content.replace(/<[^>]*>/g, '') // ลบ HTML tags
+                    });
+                }
+            });
+
+            // เพิ่มข้อความปัจจุบัน
+            messages.push({
+                "role": "user",
+                "content": message
+            });
+
+            // เรียก API Deepseek
+            fetch('https://api.deepseek.com/chat/completions', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': 'Bearer sk-18e5b31f78cc416fb0e68175c5a0ce76'
+                },
+                body: JSON.stringify({
+                    model: 'deepseek-chat',
+                    messages: messages,
+                    max_tokens: 1000,
+                    temperature: 0.7,
+                    stream: false
+                })
+            })
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                return response.json();
+            })
+            .then(data => {
                 hideTypingIndicator();
                 
-                // Get AI response
-                const response = getAIResponse(message);
-                addMessage('bot', response.content, response.options);
+                if (data.choices && data.choices.length > 0) {
+                    const aiResponse = data.choices[0].message.content;
+                    
+                    // ประมวลผลคำตอบและสร้าง quick replies
+                    const processedResponse = processAIResponse(aiResponse, message);
+                    addMessage('bot', processedResponse.content, processedResponse.options);
+                    
+                } else {
+                    // Fallback response
+                    addMessage('bot', 'ขออภัยค่ะ เกิดข้อผิดพลาดในการประมวลผล กรุณาลองใหม่อีกครั้งค่ะ 🙏');
+                }
+            })
+            .catch(error => {
+                console.error('Deepseek API Error:', error);
+                hideTypingIndicator();
                 
-            }, processingTime);
+                // Fallback to local response in case of API error
+                const fallbackResponse = getFallbackResponse(message);
+                addMessage('bot', fallbackResponse.content, fallbackResponse.options);
+            });
         }
-        
-        // Get AI response (simplified simulation)
-        function getAIResponse(message) {
+
+        // ประมวลผลคำตอบจาก AI และเพิ่ม quick replies
+        function processAIResponse(aiResponse, userMessage) {
+            const msg = userMessage.toLowerCase();
+            let quickReplies = [];
+            
+            // กำหนด quick replies ตามบริบท
+            if (msg.includes('เมนู') || msg.includes('อาหาร')) {
+                quickReplies = ['ข้าวผัด', 'ก๋วยเตี๋ยว', 'เครื่องดื่ม', 'ของหวาน'];
+            } else if (msg.includes('ราคา') || msg.includes('เท่าไหร่')) {
+                quickReplies = ['ดูเมนูทั้งหมด', 'แนะนำอาหารราคาประหยัด', 'อาหารยอดนิยม'];
+            } else if (msg.includes('คิว') || msg.includes('รอ')) {
+                quickReplies = ['ตรวจสอบคิว', 'เวลาเตรียมอาหาร', 'ติดต่อร้าน'];
+            } else if (msg.includes('สั่ง') || msg.includes('ซื้อ')) {
+                quickReplies = ['ดูตะกร้า', 'เพิ่มเมนู', 'ชำระเงิน'];
+            } else {
+                quickReplies = ['ดูเมนู', 'ตรวจสอบคิว', 'ติดต่อร้าน', 'ช่วยเหลือ'];
+            }
+            
+            return {
+                content: aiResponse,
+                options: {
+                    quickReplies: quickReplies
+                }
+            };
+        }
+
+        // ฟังก์ชัน fallback เมื่อ API มีปัญหา
+        function getFallbackResponse(message) {
             const msg = message.toLowerCase();
             
             // Menu related
@@ -717,102 +739,70 @@ $chatbotSessionId = SessionManager::get('chatbot_session_id');
                         • <strong>อาหารจานเดียว</strong> - ข้าวผัด ข้าวคลุกกะปิ<br>
                         • <strong>ก๋วยเตี๋ยว</strong> - น้ำใส น้ำตก ต้มยำ<br>
                         • <strong>ข้าวราดแกง</strong> - แกงเขียวหวาน แกงเผ็ด<br>
-                        • <strong>เครื่องดื่ม</strong> - กาแฟ ชา น้ำผลไม้<br>
-                        • <strong>ของหวาน</strong> - ไอศกรีม ขนมไทย<br><br>
-                        ต้องการดูรายละเอียดหมวดไหนเป็นพิเศษไหมคะ?`,
+                        • <strong>เครื่องดื่ม</strong> - กาแฟ ชา น้ำผลไม้<br><br>
+                        ต้องการดูรายละเอียดเมนูไหนคะ? 😊`,
                     options: {
                         quickReplies: ['ข้าวผัด', 'ก๋วยเตี๋ยว', 'เครื่องดื่ม', 'ของหวาน', 'ดูเมนูทั้งหมด']
                     }
                 };
             }
             
-            // Popular items
-            if (msg.includes('แนะนำ') || msg.includes('ยอดนิยม') || msg.includes('ขายดี')) {
+            // Price related
+            if (msg.includes('ราคา') || msg.includes('เท่าไหร่') || msg.includes('กี่บาท')) {
                 return {
-                    content: `⭐ เมนูยอดนิยมของเรา:<br><br>
-                        🥇 <strong>ข้าวผัดหมู</strong> - ฿45<br>
-                        🥈 <strong>ก๋วยเตี๋ยวหมูน้ำใส</strong> - ฿40<br>
-                        🥉 <strong>กาแฟเย็น</strong> - ฿35<br><br>
-                        เมนูเหล่านี้เป็นที่ชื่นชอบของลูกค้ามากที่สุดค่ะ ต้องการเพิ่มลงตะกร้าไหมคะ?`,
+                    content: `💰 ราคาอาหารของเรา:<br><br>
+                        • ข้าวผัด: 40-60 บาท<br>
+                        • ก๋วยเตี๋ยว: 35-55 บาท<br>
+                        • ข้าวราดแกง: 30-50 บาท<br>
+                        • เครื่องดื่ม: 15-35 บาท<br><br>
+                        ต้องการทราบราคาเมนูใดเป็นพิเศษคะ? 🤔`,
                     options: {
-                        quickReplies: ['เพิ่มข้าวผัดหมู', 'เพิ่มก๋วยเตี๋ยว', 'เพิ่มกาแฟเย็น', 'ดูเมนูอื่น']
+                        quickReplies: ['ข้าวผัด', 'ก๋วยเตี๋ยว', 'แกง', 'เครื่องดื่ม']
                     }
                 };
             }
             
-            // Queue checking
-            if (msg.includes('คิว') || msg.includes('รอ') || msg.includes('สถานะ')) {
+            // Queue related
+            if (msg.includes('คิว') || msg.includes('รอ') || msg.includes('นาน')) {
                 return {
-                    content: `🕐 ตรวจสอบสถานะคิว:<br><br>
-                        คุณสามารถตรวจสอบสถานะคิวได้ง่ายๆ โดยใส่หมายเลขคิวของคุณ<br><br>
-                        หมายเลขคิวจะขึ้นต้นด้วย "Q" ตามด้วยตัวเลข เช่น Q2507270001<br><br>
-                        <a href="queue_status.php" target="_blank">👆 คลิกที่นี่เพื่อตรวจสอบคิว</a>`,
+                    content: `⏰ สถานะคิวปัจจุบัน:<br><br>
+                        📊 คิวที่กำลังเตรียม: 15<br>
+                        ⏳ เวลารอโดยประมาณ: 12-15 นาที<br>
+                        🎯 คิวถัดไป: 16, 17, 18<br><br>
+                        ต้องการตรวจสอบคิวของคุณไหมคะ? กรุณาแจ้งหมายเลขออเดอร์ค่ะ 📱`,
                     options: {
-                        quickReplies: ['วิธีดูคิว', 'เวลารอโดยเฉลี่ย', 'แจ้งเตือนคิว']
+                        quickReplies: ['ตรวจสอบคิว', 'เวลาเตรียม', 'ติดต่อร้าน']
                     }
                 };
             }
             
-            // Price inquiry
-            if (msg.includes('ราคา') || msg.includes('เท่าไหร่') || msg.includes('บาท')) {
+            // Ordering
+            if (msg.includes('สั่ง') || msg.includes('ซื้อ') || msg.includes('เอา')) {
                 return {
-                    content: `💰 ช่วงราคาของเรา:<br><br>
-                        • <strong>อาหารจานเดียว:</strong> ฿35-65<br>
-                        • <strong>ก๋วยเตี๋ยว:</strong> ฿40-55<br>
-                        • <strong>ข้าวราดแกง:</strong> ฿45-50<br>
-                        • <strong>เครื่องดื่ม:</strong> ฿10-35<br>
-                        • <strong>ของหวาน:</strong> ฿25-35<br><br>
-                        ต้องการทราบราคาเมนูไหนเป็นพิเศษไหมคะ?`,
+                    content: `🛒 วิธีการสั่งอาหาร:<br><br>
+                        1. เลือกเมนูจากรายการ<br>
+                        2. เพิ่มลงตะกร้า<br>
+                        3. ตรวจสอบรายการ<br>
+                        4. ชำระเงิน<br>
+                        5. รอรับอาหารตามคิว<br><br>
+                        เริ่มสั่งอาหารเลยไหมคะ? 😋`,
                     options: {
-                        quickReplies: ['ราคาข้าวผัด', 'ราคาก๋วยเตี๋ยว', 'ราคาเครื่องดื่ม', 'ดูราคาทั้งหมด']
-                    }
-                };
-            }
-            
-            // Ordering help
-            if (msg.includes('สั่ง') || msg.includes('วิธี') || msg.includes('ช่วย')) {
-                return {
-                    content: `📝 วิธีการสั่งอาหาร:<br><br>
-                        1️⃣ เลือกเมนูจากหมวดหมู่ต่างๆ<br>
-                        2️⃣ เพิ่มสินค้าลงตะกร้า<br>
-                        3️⃣ ตรวจสอบรายการในตะกร้า<br>
-                        4️⃣ ดำเนินการชำระเงิน<br>
-                        5️⃣ รับหมายเลขคิวและรอรับอาหาร<br><br>
-                        มีอะไรให้ช่วยเพิ่มเติมไหมคะ?`,
-                    options: {
-                        quickReplies: ['เริ่มสั่งอาหาร', 'วิธีชำระเงิน', 'ตรวจสอบตะกร้า', 'ติดต่อร้าน']
-                    }
-                };
-            }
-            
-            // Greetings
-            if (msg.includes('สวัสดี') || msg.includes('หวัดดี') || msg.includes('ดี') || msg.includes('hello')) {
-                const greetings = [
-                    'สวัสดีค่ะ! ยินดีต้อนรับสู่ร้านของเรา 😊',
-                    'หวัดดีค่ะ! มีอะไรให้ช่วยเหลือไหมคะ? 🙏',
-                    'สวัสดีค่ะ! พร้อมแนะนำเมนูอร่อยๆ ให้คุณเลยค่ะ 🍽️'
-                ];
-                
-                return {
-                    content: greetings[Math.floor(Math.random() * greetings.length)],
-                    options: {
-                        quickReplies: ['ดูเมนู', 'แนะนำอาหาร', 'ตรวจสอบคิว', 'ถามราคา']
+                        quickReplies: ['ดูเมนู', 'วิธีชำระเงิน', 'ติดต่อร้าน']
                     }
                 };
             }
             
             // Default response
             return {
-                content: `ขออภัยค่ะ ฉันไม่เข้าใจคำถามของคุณ 😅<br><br>
-                    คุณสามารถ:<br>
-                    • ถามเกี่ยวกับเมนูอาหาร<br>
-                    • ขอแนะนำอาหารยอดนิยม<br>
-                    • ตรวจสอบสถานะคิว<br>
-                    • สอบถามราคาอาหาร<br>
-                    • ขอความช่วยเหลือการสั่งอาหาร<br><br>
-                    ลองพิมพ์คำถามใหม่ดูนะคะ 🤗`,
+                content: `สวัสดีค่ะ! 👋 ยินดีให้บริการครับ<br><br>
+                    ฉันสามารถช่วยคุณได้เรื่อง:<br>
+                    🍽️ แนะนำเมนูอาหาร<br>
+                    💰 สอบถามราคา<br>
+                    ⏰ ตรวจสอบคิว<br>
+                    🛒 วิธีการสั่งซื้อ<br><br>
+                    มีอะไรให้ช่วยไหมคะ? 😊`,
                 options: {
-                    quickReplies: ['ดูเมนู', 'แนะนำอาหาร', 'ช่วยเหลือ', 'ติดต่อร้าน']
+                    quickReplies: ['ดูเมนู', 'ตรวจสอบคิว', 'ราคาอาหาร', 'วิธีสั่งซื้อ']
                 }
             };
         }
@@ -824,9 +814,9 @@ $chatbotSessionId = SessionManager::get('chatbot_session_id');
         }
         
         // Auto-resize textarea
-        function adjustTextareaHeight(element) {
-            element.style.height = 'auto';
-            element.style.height = (element.scrollHeight) + 'px';
+        function adjustTextareaHeight(textarea) {
+            textarea.style.height = 'auto';
+            textarea.style.height = Math.min(textarea.scrollHeight, 120) + 'px';
         }
         
         // Clear chat
@@ -866,33 +856,6 @@ $chatbotSessionId = SessionManager::get('chatbot_session_id');
                         </div>
                     `;
                     messageHistory = [];
-                }
-            });
-        }
-        
-        // Add to cart from chat
-        function addToCartFromChat(productId, productName, price) {
-            $.ajax({
-                url: 'api/cart.php',
-                type: 'POST',
-                data: {
-                    action: 'add',
-                    product_id: productId,
-                    quantity: 1
-                },
-                dataType: 'json',
-                success: function(response) {
-                    if (response.success) {
-                        updateCartBadge(response.cart_count);
-                        addMessage('bot', `✅ เพิ่ม "${productName}" ลงตะกร้าแล้วค่ะ!<br><br>ต้องการสั่งอะไรเพิ่มไหมคะ?`, {
-                            quickReplies: ['ดูตะกร้า', 'สั่งเมนูอื่น', 'ชำระเงิน', 'เสร็จแล้ว']
-                        });
-                    } else {
-                        addMessage('bot', `❌ ขออภัยค่ะ ไม่สามารถเพิ่มสินค้าได้: ${response.message}`);
-                    }
-                },
-                error: function() {
-                    addMessage('bot', '❌ เกิดข้อผิดพลาดในการเพิ่มสินค้า กรุณาลองใหม่อีกครั้งค่ะ');
                 }
             });
         }
@@ -938,7 +901,7 @@ $chatbotSessionId = SessionManager::get('chatbot_session_id');
             // Load cart count
             loadCartCount();
             
-            console.log('Chatbot page loaded successfully');
+            console.log('Chatbot page loaded successfully with Deepseek API integration');
         });
     </script>
 </body>

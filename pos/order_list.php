@@ -1,6 +1,6 @@
 <?php
 /**
- * รายการออเดอร์ทั้งหมด - POS
+ * รายการออเดอร์ทั้งหมด - POS (แก้ไขแล้ว)
  * Smart Order Management System
  */
 
@@ -100,50 +100,65 @@ try {
     <!-- Font Awesome -->
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" rel="stylesheet">
     
-    <!-- DataTables CSS -->
-    <link href="https://cdn.datatables.net/1.13.7/css/dataTables.bootstrap5.min.css" rel="stylesheet">
-    <link href="https://cdn.datatables.net/responsive/2.5.0/css/responsive.bootstrap5.min.css" rel="stylesheet">
+    <!-- Sweet Alert 2 -->
+    <link href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css" rel="stylesheet">
     
     <style>
         :root {
-            --pos-primary: #4f46e5;
-            --pos-success: #10b981;
-            --pos-warning: #f59e0b;
-            --pos-danger: #ef4444;
-            --pos-info: #3b82f6;
+            --pos-primary: #2563eb;
+            --pos-primary-dark: #1d4ed8;
+            --pos-success: #059669;
+            --pos-warning: #d97706;
+            --pos-danger: #dc2626;
+            --pos-info: #0284c7;
             --pos-light: #f8fafc;
             --pos-white: #ffffff;
-            --pos-shadow: 0 4px 20px rgba(0,0,0,0.1);
-            --pos-border-radius: 16px;
+            --pos-gray-50: #f9fafb;
+            --pos-gray-100: #f3f4f6;
+            --pos-gray-200: #e5e7eb;
+            --pos-gray-300: #d1d5db;
+            --pos-gray-400: #9ca3af;
+            --pos-gray-500: #6b7280;
+            --pos-gray-600: #4b5563;
+            --pos-gray-700: #374151;
+            --pos-gray-800: #1f2937;
+            --pos-gray-900: #111827;
+            --pos-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+            --pos-shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+            --pos-border-radius: 12px;
+            --pos-transition: all 0.2s ease-in-out;
         }
         
         body {
-            background: var(--pos-light);
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            font-size: 16px;
+            background: linear-gradient(135deg, var(--pos-gray-50) 0%, #e0e7ff 100%);
+            font-family: 'Inter', 'Segoe UI', system-ui, sans-serif;
+            font-size: 14px;
+            color: var(--pos-gray-800);
+            line-height: 1.5;
         }
         
         .pos-container {
-            padding: 15px;
+            padding: 20px;
             max-width: 1400px;
             margin: 0 auto;
         }
         
         .pos-header {
-            background: linear-gradient(135deg, var(--pos-primary), #6366f1);
+            background: linear-gradient(135deg, var(--pos-primary), var(--pos-primary-dark));
             color: white;
             border-radius: var(--pos-border-radius);
-            padding: 20px;
-            margin-bottom: 20px;
-            box-shadow: var(--pos-shadow);
+            padding: 24px;
+            margin-bottom: 24px;
+            box-shadow: var(--pos-shadow-lg);
         }
         
         .filters-section {
             background: var(--pos-white);
             border-radius: var(--pos-border-radius);
             box-shadow: var(--pos-shadow);
-            padding: 20px;
-            margin-bottom: 20px;
+            padding: 24px;
+            margin-bottom: 24px;
+            border: 1px solid var(--pos-gray-200);
         }
         
         .orders-section {
@@ -151,59 +166,73 @@ try {
             border-radius: var(--pos-border-radius);
             box-shadow: var(--pos-shadow);
             overflow: hidden;
+            border: 1px solid var(--pos-gray-200);
         }
         
         .section-header {
-            background: linear-gradient(135deg, #f3f4f6, #e5e7eb);
-            padding: 15px 20px;
-            border-bottom: 1px solid #e5e7eb;
+            background: linear-gradient(135deg, var(--pos-gray-50), var(--pos-gray-100));
+            padding: 16px 24px;
+            border-bottom: 2px solid var(--pos-gray-200);
             font-weight: 600;
             display: flex;
-            justify-content: between;
+            justify-content: space-between;
             align-items: center;
+            color: var(--pos-gray-700);
         }
         
         .status-tabs {
             display: flex;
-            gap: 10px;
+            gap: 12px;
             margin-bottom: 20px;
             flex-wrap: wrap;
         }
         
         .status-tab {
-            background: #f3f4f6;
-            border: none;
+            background: var(--pos-gray-100);
+            border: 2px solid var(--pos-gray-200);
             border-radius: 25px;
-            padding: 8px 20px;
-            font-size: 0.9rem;
+            padding: 10px 18px;
+            font-size: 14px;
             text-decoration: none;
-            color: #374151;
-            transition: all 0.3s ease;
+            color: var(--pos-gray-700);
+            transition: var(--pos-transition);
             position: relative;
+            font-weight: 500;
         }
         
         .status-tab.active,
         .status-tab:hover {
             background: var(--pos-primary);
             color: white;
+            border-color: var(--pos-primary);
+            transform: translateY(-1px);
+            box-shadow: var(--pos-shadow);
         }
         
         .status-tab .badge {
             margin-left: 8px;
+            background: rgba(255, 255, 255, 0.9);
+            color: var(--pos-gray-700);
+            font-weight: 600;
+        }
+        
+        .status-tab.active .badge {
             background: rgba(255, 255, 255, 0.2);
+            color: white;
         }
         
         .order-card {
-            border: 1px solid #e5e7eb;
-            border-radius: 12px;
+            border: 2px solid var(--pos-gray-200);
+            border-radius: var(--pos-border-radius);
             padding: 20px;
-            margin-bottom: 15px;
-            transition: all 0.3s ease;
+            margin-bottom: 16px;
+            transition: var(--pos-transition);
+            background: var(--pos-white);
         }
         
         .order-card:hover {
             border-color: var(--pos-primary);
-            box-shadow: var(--pos-shadow);
+            box-shadow: var(--pos-shadow-lg);
             transform: translateY(-2px);
         }
         
@@ -211,125 +240,281 @@ try {
             display: flex;
             justify-content: space-between;
             align-items: center;
-            margin-bottom: 15px;
+            margin-bottom: 16px;
+            padding-bottom: 16px;
+            border-bottom: 1px solid var(--pos-gray-200);
         }
         
         .queue-number {
-            background: linear-gradient(135deg, var(--pos-primary), #6366f1);
+            background: linear-gradient(135deg, var(--pos-primary), var(--pos-primary-dark));
             color: white;
-            border-radius: 8px;
-            padding: 8px 15px;
+            border-radius: 10px;
+            padding: 12px 16px;
             font-weight: 700;
-            font-size: 1.1rem;
+            font-size: 18px;
+            box-shadow: var(--pos-shadow);
         }
         
         .order-status {
-            padding: 6px 12px;
+            padding: 8px 14px;
             border-radius: 20px;
-            font-size: 0.8rem;
+            font-size: 12px;
             font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
         }
         
         .order-details {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-            gap: 15px;
-            margin-bottom: 15px;
+            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+            gap: 16px;
+            margin-bottom: 16px;
         }
         
         .detail-item {
             display: flex;
             justify-content: space-between;
-            padding: 8px 0;
-            border-bottom: 1px solid #f3f4f6;
+            align-items: center;
+            padding: 10px 0;
+            border-bottom: 1px solid var(--pos-gray-100);
+        }
+        
+        .detail-item:last-child {
+            border-bottom: none;
         }
         
         .detail-label {
-            color: #6b7280;
-            font-size: 0.9rem;
+            color: var(--pos-gray-600);
+            font-size: 13px;
+            font-weight: 500;
         }
         
         .detail-value {
             font-weight: 600;
-            color: #374151;
+            color: var(--pos-gray-800);
+            font-size: 14px;
         }
         
         .order-actions {
             display: flex;
             gap: 10px;
             flex-wrap: wrap;
+            padding-top: 16px;
+            border-top: 1px solid var(--pos-gray-200);
         }
         
         .action-btn {
-            padding: 6px 12px;
-            border-radius: 6px;
-            border: 1px solid #e5e7eb;
+            padding: 8px 16px;
+            border-radius: 8px;
+            border: 2px solid;
             background: var(--pos-white);
-            color: #374151;
             text-decoration: none;
-            font-size: 0.8rem;
-            transition: all 0.3s ease;
+            font-size: 13px;
+            font-weight: 600;
+            transition: var(--pos-transition);
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            cursor: pointer;
         }
         
-        .action-btn:hover {
-            background: var(--pos-primary);
+        .action-btn.btn-view {
+            color: var(--pos-gray-600);
+            border-color: var(--pos-gray-300);
+        }
+        
+        .action-btn.btn-view:hover {
+            background: var(--pos-gray-50);
+            border-color: var(--pos-gray-400);
+        }
+        
+        .action-btn.btn-call {
+            color: var(--pos-info);
+            border-color: var(--pos-info);
+        }
+        
+        .action-btn.btn-call:hover {
+            background: var(--pos-info);
             color: white;
-            border-color: var(--pos-primary);
         }
         
-        .action-btn.btn-success {
-            background: var(--pos-success);
-            border-color: var(--pos-success);
-            color: white;
-        }
-        
-        .action-btn.btn-warning {
-            background: var(--pos-warning);
+        .action-btn.btn-preparing {
+            color: var(--pos-warning);
             border-color: var(--pos-warning);
+        }
+        
+        .action-btn.btn-preparing:hover {
+            background: var(--pos-warning);
             color: white;
         }
         
-        .action-btn.btn-danger {
-            background: var(--pos-danger);
+        .action-btn.btn-ready {
+            color: var(--pos-success);
+            border-color: var(--pos-success);
+        }
+        
+        .action-btn.btn-ready:hover {
+            background: var(--pos-success);
+            color: white;
+        }
+        
+        .action-btn.btn-complete {
+            color: var(--pos-success);
+            border-color: var(--pos-success);
+        }
+        
+        .action-btn.btn-complete:hover {
+            background: var(--pos-success);
+            color: white;
+        }
+        
+        .action-btn.btn-cancel {
+            color: var(--pos-danger);
             border-color: var(--pos-danger);
+        }
+        
+        .action-btn.btn-cancel:hover {
+            background: var(--pos-danger);
             color: white;
         }
         
         .search-filters {
             display: grid;
             grid-template-columns: 1fr auto auto;
-            gap: 15px;
+            gap: 16px;
             align-items: end;
         }
         
         .form-control, .form-select {
             border-radius: 8px;
-            border: 2px solid #e5e7eb;
-            padding: 10px 15px;
+            border: 2px solid var(--pos-gray-200);
+            padding: 12px 16px;
+            font-size: 14px;
+            transition: var(--pos-transition);
         }
         
         .form-control:focus, .form-select:focus {
             border-color: var(--pos-primary);
-            box-shadow: 0 0 0 0.2rem rgba(79, 70, 229, 0.15);
+            box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+            outline: none;
+        }
+        
+        .form-label {
+            font-weight: 600;
+            color: var(--pos-gray-700);
+            margin-bottom: 8px;
+            font-size: 14px;
+        }
+        
+        .btn {
+            border-radius: 8px;
+            padding: 12px 20px;
+            font-weight: 600;
+            font-size: 14px;
+            transition: var(--pos-transition);
+            border: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .btn-primary {
+            background: linear-gradient(135deg, var(--pos-primary), var(--pos-primary-dark));
+            color: white;
+        }
+        
+        .btn-primary:hover {
+            transform: translateY(-1px);
+            box-shadow: var(--pos-shadow-lg);
+        }
+        
+        .btn-light {
+            background: var(--pos-white);
+            color: var(--pos-gray-700);
+            border: 2px solid var(--pos-gray-200);
+        }
+        
+        .btn-light:hover {
+            background: var(--pos-gray-50);
+            border-color: var(--pos-gray-300);
         }
         
         .empty-state {
             text-align: center;
             padding: 60px 20px;
-            color: #6b7280;
+            color: var(--pos-gray-500);
+        }
+        
+        .empty-state i {
+            color: var(--pos-gray-400);
+            margin-bottom: 16px;
+        }
+        
+        /* Badge Colors */
+        .bg-pending { background: var(--pos-warning) !important; }
+        .bg-confirmed { background: var(--pos-info) !important; }
+        .bg-preparing { background: var(--pos-primary) !important; }
+        .bg-ready { background: var(--pos-success) !important; }
+        .bg-completed { background: var(--pos-gray-500) !important; }
+        .bg-cancelled { background: var(--pos-danger) !important; }
+        
+        /* Alert Styles */
+        .alert {
+            border-radius: var(--pos-border-radius);
+            border: none;
+            box-shadow: var(--pos-shadow);
+            padding: 16px 20px;
+        }
+        
+        .alert-danger {
+            background: #fef2f2;
+            color: var(--pos-danger);
+        }
+        
+        /* Loading States */
+        .loading {
+            opacity: 0.6;
+            pointer-events: none;
+        }
+        
+        .loading::after {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 20px;
+            height: 20px;
+            margin: -10px 0 0 -10px;
+            border: 2px solid var(--pos-primary);
+            border-radius: 50%;
+            border-top-color: transparent;
+            animation: spin 1s linear infinite;
+        }
+        
+        @keyframes spin {
+            to { transform: rotate(360deg); }
         }
         
         /* Mobile Responsive */
         @media (max-width: 768px) {
+            .pos-container {
+                padding: 12px;
+            }
+            
+            .pos-header {
+                padding: 16px;
+                text-align: center;
+            }
+            
             .search-filters {
                 grid-template-columns: 1fr;
-                gap: 10px;
+                gap: 12px;
             }
             
             .order-header {
                 flex-direction: column;
                 align-items: flex-start;
-                gap: 10px;
+                gap: 12px;
             }
             
             .order-details {
@@ -338,10 +523,37 @@ try {
             
             .order-actions {
                 justify-content: center;
+                gap: 8px;
+            }
+            
+            .action-btn {
+                font-size: 12px;
+                padding: 6px 12px;
             }
             
             .status-tabs {
                 justify-content: center;
+                gap: 8px;
+            }
+            
+            .status-tab {
+                padding: 8px 14px;
+                font-size: 13px;
+            }
+        }
+        
+        @media (max-width: 576px) {
+            .queue-number {
+                font-size: 16px;
+                padding: 10px 14px;
+            }
+            
+            .detail-value {
+                font-size: 13px;
+            }
+            
+            .order-card {
+                padding: 16px;
             }
         }
     </style>
@@ -352,15 +564,15 @@ try {
         <div class="pos-header">
             <div class="d-flex justify-content-between align-items-center">
                 <div>
-                    <h1 class="h3 mb-1">
+                    <h1 class="h3 mb-2">
                         <i class="fas fa-list-alt me-2"></i>
                         รายการออเดอร์
                     </h1>
-                    <p class="mb-0 opacity-75">จัดการและติดตามออเดอร์ทั้งหมด</p>
+                    <p class="mb-0 opacity-90">จัดการและติดตามออเดอร์ทั้งหมด</p>
                 </div>
                 <div>
                     <a href="index.php" class="btn btn-light">
-                        <i class="fas fa-arrow-left me-1"></i>กลับ
+                        <i class="fas fa-arrow-left"></i>กลับ
                     </a>
                 </div>
             </div>
@@ -391,7 +603,7 @@ try {
                 
                 <div>
                     <button type="submit" class="btn btn-primary">
-                        <i class="fas fa-search me-1"></i>ค้นหา
+                        <i class="fas fa-search"></i>ค้นหา
                     </button>
                 </div>
             </form>
@@ -446,35 +658,36 @@ try {
                 <span class="badge bg-primary"><?php echo count($orders); ?> รายการ</span>
             </div>
             
-            <div class="p-3">
+            <div class="p-4">
                 <?php if (empty($orders)): ?>
                     <div class="empty-state">
-                        <i class="fas fa-inbox fa-3x mb-3"></i>
-                        <h5>ไม่พบออเดอร์</h5>
+                        <i class="fas fa-inbox fa-4x"></i>
+                        <h5 class="mt-3">ไม่พบออเดอร์</h5>
                         <p class="text-muted">ไม่มีออเดอร์ที่ตรงกับเงื่อนไขที่ค้นหา</p>
-                        <a href="new_order.php" class="btn btn-primary">
-                            <i class="fas fa-plus me-2"></i>สร้างออเดอร์ใหม่
+                        <a href="new_order.php" class="btn btn-primary mt-3">
+                            <i class="fas fa-plus"></i>สร้างออเดอร์ใหม่
                         </a>
                     </div>
                 <?php else: ?>
                     <?php foreach ($orders as $order): ?>
-                        <div class="order-card">
+                        <div class="order-card" id="order-<?php echo $order['order_id']; ?>">
                             <div class="order-header">
                                 <div class="d-flex align-items-center gap-3">
                                     <div class="queue-number">
                                         <?php echo clean($order['queue_number'] ?: 'ORD-' . $order['order_id']); ?>
                                     </div>
                                     <div>
-                                        <div class="fw-semibold">
+                                        <div class="fw-bold fs-5">
                                             <?php echo clean($order['customer_name'] ?: 'ลูกค้าทั่วไป'); ?>
                                         </div>
                                         <small class="text-muted">
+                                            <i class="fas fa-clock me-1"></i>
                                             <?php echo formatDate($order['created_at'], 'H:i'); ?>
                                         </small>
                                     </div>
                                 </div>
                                 
-                                <div class="order-status <?php echo getOrderStatusClass($order['status']); ?>">
+                                <div class="order-status bg-<?php echo $order['status']; ?>">
                                     <?php echo getOrderStatusText($order['status']); ?>
                                 </div>
                             </div>
@@ -483,7 +696,7 @@ try {
                                 <div>
                                     <div class="detail-item">
                                         <span class="detail-label">ยอดรวม:</span>
-                                        <span class="detail-value text-success">
+                                        <span class="detail-value text-success fw-bold">
                                             <?php echo formatCurrency($order['total_price']); ?>
                                         </span>
                                     </div>
@@ -527,7 +740,7 @@ try {
                             </div>
                             
                             <?php if ($order['table_number'] || $order['notes']): ?>
-                                <div class="mt-2 p-2 bg-light rounded">
+                                <div class="mt-3 p-3 bg-light rounded">
                                     <?php if ($order['table_number']): ?>
                                         <small><strong>โต๊ะ:</strong> <?php echo clean($order['table_number']); ?></small><br>
                                     <?php endif; ?>
@@ -538,43 +751,47 @@ try {
                             <?php endif; ?>
                             
                             <div class="order-actions">
+                                <button class="action-btn btn-view" onclick="viewOrderDetails(<?php echo $order['order_id']; ?>)">
+                                    <i class="fas fa-eye"></i>ดูรายละเอียด
+                                </button>
+                                
                                 <a href="print_receipt.php?order_id=<?php echo $order['order_id']; ?>" 
-                                   class="action-btn" target="_blank">
-                                    <i class="fas fa-receipt me-1"></i>ใบเสร็จ
+                                   class="action-btn btn-view" target="_blank">
+                                    <i class="fas fa-receipt"></i>ใบเสร็จ
                                 </a>
                                 
                                 <?php if (in_array($order['status'], ['confirmed', 'preparing', 'ready'])): ?>
-                                    <button class="action-btn" 
-                                            onclick="callQueue('<?php echo $order['queue_number']; ?>')">
-                                        <i class="fas fa-volume-up me-1"></i>เรียกคิว
+                                    <button class="action-btn btn-call" 
+                                            onclick="callQueue('<?php echo $order['queue_number']; ?>', <?php echo $order['order_id']; ?>)">
+                                        <i class="fas fa-volume-up"></i>เรียกคิว
                                     </button>
                                 <?php endif; ?>
                                 
                                 <?php if ($order['status'] === 'confirmed'): ?>
-                                    <button class="action-btn btn-warning" 
+                                    <button class="action-btn btn-preparing" 
                                             onclick="updateOrderStatus(<?php echo $order['order_id']; ?>, 'preparing')">
-                                        <i class="fas fa-utensils me-1"></i>เริ่มทำ
+                                        <i class="fas fa-utensils"></i>เริ่มทำ
                                     </button>
                                 <?php endif; ?>
                                 
                                 <?php if ($order['status'] === 'preparing'): ?>
-                                    <button class="action-btn btn-success" 
+                                    <button class="action-btn btn-ready" 
                                             onclick="updateOrderStatus(<?php echo $order['order_id']; ?>, 'ready')">
-                                        <i class="fas fa-check me-1"></i>พร้อมเสิร์ฟ
+                                        <i class="fas fa-check"></i>พร้อมเสิร์ฟ
                                     </button>
                                 <?php endif; ?>
                                 
                                 <?php if ($order['status'] === 'ready'): ?>
-                                    <button class="action-btn btn-success" 
+                                    <button class="action-btn btn-complete" 
                                             onclick="updateOrderStatus(<?php echo $order['order_id']; ?>, 'completed')">
-                                        <i class="fas fa-check-circle me-1"></i>เสร็จสิ้น
+                                        <i class="fas fa-check-circle"></i>เสร็จสิ้น
                                     </button>
                                 <?php endif; ?>
                                 
                                 <?php if (in_array($order['status'], ['pending', 'confirmed'])): ?>
-                                    <button class="action-btn btn-danger" 
+                                    <button class="action-btn btn-cancel" 
                                             onclick="cancelOrder(<?php echo $order['order_id']; ?>)">
-                                        <i class="fas fa-times me-1"></i>ยกเลิก
+                                        <i class="fas fa-times"></i>ยกเลิก
                                     </button>
                                 <?php endif; ?>
                             </div>
@@ -588,36 +805,87 @@ try {
     <!-- Bootstrap 5 JS -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
     
+    <!-- jQuery -->
+    <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+    
+    <!-- Sweet Alert 2 -->
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    
     <script>
-        // Call queue function
-        function callQueue(queueNumber) {
-            if (confirm('ต้องการเรียกคิว ' + queueNumber + '?')) {
-                fetch('../api/voice_queue.php', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                    },
-                    body: JSON.stringify({
-                        action: 'call_queue',
-                        queue_number: queueNumber
-                    })
-                })
-                .then(response => response.json())
-                .then(data => {
-                    if (data.success) {
-                        alert('เรียกคิว ' + queueNumber + ' เรียบร้อยแล้ว');
-                    } else {
-                        alert('เกิดข้อผิดพลาด: ' + data.message);
+        const SITE_URL = '<?php echo SITE_URL; ?>';
+        
+        // Call queue function with improved error handling
+        function callQueue(queueNumber, orderId) {
+            Swal.fire({
+                title: 'เรียกคิว',
+                text: `ต้องการเรียกคิว ${queueNumber}?`,
+                icon: 'question',
+                showCancelButton: true,
+                confirmButtonColor: '#2563eb',
+                cancelButtonColor: '#6b7280',
+                confirmButtonText: 'เรียกคิว',
+                cancelButtonText: 'ยกเลิก'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    // Show loading
+                    const orderCard = document.getElementById(`order-${orderId}`);
+                    if (orderCard) {
+                        orderCard.classList.add('loading');
                     }
-                })
-                .catch(error => {
-                    console.error('Error:', error);
-                    alert('เกิดข้อผิดพลาดในการเรียกคิว');
-                });
-            }
+                    
+                    fetch(`${SITE_URL}/api/voice_queue.php`, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                        },
+                        body: JSON.stringify({
+                            action: 'call_queue',
+                            queue_number: queueNumber,
+                            order_id: orderId
+                        })
+                    })
+                    .then(response => response.json())
+                    .then(data => {
+                        if (orderCard) {
+                            orderCard.classList.remove('loading');
+                        }
+                        
+                        if (data.success) {
+                            // Play voice message
+                            playVoiceMessage(data.voice_message || `เรียกคิวหมายเลข ${queueNumber} กรุณามารับอาหารค่ะ`);
+                            
+                            Swal.fire({
+                                icon: 'success',
+                                title: 'เรียกคิวสำเร็จ',
+                                text: `เรียกคิว ${queueNumber} เรียบร้อยแล้ว`,
+                                timer: 2000,
+                                showConfirmButton: false
+                            });
+                        } else {
+                            Swal.fire({
+                                icon: 'error',
+                                title: 'เกิดข้อผิดพลาด',
+                                text: data.error || 'ไม่สามารถเรียกคิวได้'
+                            });
+                        }
+                    })
+                    .catch(error => {
+                        if (orderCard) {
+                            orderCard.classList.remove('loading');
+                        }
+                        
+                        console.error('Error:', error);
+                        Swal.fire({
+                            icon: 'error',
+                            title: 'เกิดข้อผิดพลาด',
+                            text: 'ไม่สามารถเชื่อมต่อกับเซิร์ฟเวอร์ได้'
+                        });
+                    });
+                }
+            });
         }
         
-        // Update order status
+        // Update order status with improved feedback
         function updateOrderStatus(orderId, newStatus) {
             const statusText = {
                 'preparing': 'เริ่มทำอาหาร',
@@ -625,45 +893,152 @@ try {
                 'completed': 'เสร็จสิ้นออเดอร์'
             };
             
-            if (confirm('ต้องการ' + statusText[newStatus] + '?')) {
-                fetch('../api/orders.php', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                    },
-                    body: JSON.stringify({
-                        action: 'update_status',
-                        order_id: orderId,
-                        status: newStatus
-                    })
-                })
-                .then(response => response.json())
-                .then(data => {
-                    if (data.success) {
-                        alert('อัปเดตสถานะเรียบร้อยแล้ว');
-                        location.reload();
-                    } else {
-                        alert('เกิดข้อผิดพลาด: ' + data.error);
+            Swal.fire({
+                title: 'อัปเดตสถานะ',
+                text: `ต้องการ${statusText[newStatus]}?`,
+                icon: 'question',
+                showCancelButton: true,
+                confirmButtonColor: '#059669',
+                cancelButtonColor: '#6b7280',
+                confirmButtonText: 'ยืนยัน',
+                cancelButtonText: 'ยกเลิก'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    const orderCard = document.getElementById(`order-${orderId}`);
+                    if (orderCard) {
+                        orderCard.classList.add('loading');
                     }
-                })
-                .catch(error => {
-                    console.error('Error:', error);
-                    alert('เกิดข้อผิดพลาดในการอัปเดตสถานะ');
-                });
-            }
+                    
+                    fetch(`${SITE_URL}/api/orders.php`, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                        },
+                        body: JSON.stringify({
+                            action: 'update_status',
+                            order_id: orderId,
+                            status: newStatus
+                        })
+                    })
+                    .then(response => response.json())
+                    .then(data => {
+                        if (orderCard) {
+                            orderCard.classList.remove('loading');
+                        }
+                        
+                        if (data.success) {
+                            Swal.fire({
+                                icon: 'success',
+                                title: 'อัปเดตสำเร็จ',
+                                text: 'อัปเดตสถานะเรียบร้อยแล้ว',
+                                timer: 1500,
+                                showConfirmButton: false
+                            }).then(() => {
+                                location.reload();
+                            });
+                        } else {
+                            Swal.fire({
+                                icon: 'error',
+                                title: 'เกิดข้อผิดพลาด',
+                                text: data.error || 'ไม่สามารถอัปเดตสถานะได้'
+                            });
+                        }
+                    })
+                    .catch(error => {
+                        if (orderCard) {
+                            orderCard.classList.remove('loading');
+                        }
+                        
+                        console.error('Error:', error);
+                        Swal.fire({
+                            icon: 'error',
+                            title: 'เกิดข้อผิดพลาด',
+                            text: 'ไม่สามารถเชื่อมต่อกับเซิร์ฟเวอร์ได้'
+                        });
+                    });
+                }
+            });
         }
         
         // Cancel order
         function cancelOrder(orderId) {
-            if (confirm('ต้องการยกเลิกออเดอร์นี้? การกระทำนี้ไม่สามารถยกเลิกได้')) {
-                updateOrderStatus(orderId, 'cancelled');
+            Swal.fire({
+                title: 'ยกเลิกออเดอร์',
+                text: 'ต้องการยกเลิกออเดอร์นี้? การกระทำนี้ไม่สามารถยกเลิกได้',
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#dc2626',
+                cancelButtonColor: '#6b7280',
+                confirmButtonText: 'ยกเลิกออเดอร์',
+                cancelButtonText: 'ไม่ยกเลิก'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    updateOrderStatus(orderId, 'cancelled');
+                }
+            });
+        }
+        
+        // View order details
+        function viewOrderDetails(orderId) {
+            // TODO: Show order details in modal or navigate to details page
+            window.open(`${SITE_URL}/pos/order_details.php?id=${orderId}`, '_blank');
+        }
+        
+        // Play voice message using Web Speech API
+        function playVoiceMessage(message, rate = 1) {
+            if ('speechSynthesis' in window) {
+                // Stop any currently playing speech
+                speechSynthesis.cancel();
+                
+                const utterance = new SpeechSynthesisUtterance(message);
+                utterance.lang = 'th-TH';
+                utterance.rate = rate;
+                utterance.pitch = 1;
+                utterance.volume = 1;
+                
+                // Handle errors
+                utterance.onerror = function(event) {
+                    console.error('Speech synthesis error:', event.error);
+                };
+                
+                speechSynthesis.speak(utterance);
+            } else {
+                console.warn('Speech synthesis not supported in this browser');
             }
         }
         
         // Auto refresh every 60 seconds
-        setInterval(function() {
-            location.reload();
+        let autoRefreshInterval = setInterval(function() {
+            if (document.visibilityState === 'visible') {
+                location.reload();
+            }
         }, 60000);
+        
+        // Pause auto refresh when page is not visible
+        document.addEventListener('visibilitychange', function() {
+            if (document.visibilityState === 'hidden') {
+                clearInterval(autoRefreshInterval);
+            } else {
+                autoRefreshInterval = setInterval(function() {
+                    location.reload();
+                }, 60000);
+            }
+        });
+        
+        // Keyboard shortcuts
+        document.addEventListener('keydown', function(e) {
+            // R key for refresh
+            if (e.key === 'r' && e.ctrlKey) {
+                e.preventDefault();
+                location.reload();
+            }
+            
+            // F5 for refresh
+            if (e.key === 'F5') {
+                e.preventDefault();
+                location.reload();
+            }
+        });
         
         console.log('Order list page loaded successfully');
     </script>
