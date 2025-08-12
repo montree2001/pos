@@ -1,9 +1,73 @@
+<?php
+/**
+ * หน้าชำระเงิน
+ * Smart Order Management System
+ */
+
+define('SYSTEM_INIT', true);
+require_once '../config/config.php';
+require_once '../config/database.php';
+require_once '../config/session.php';
+require_once '../includes/functions.php';
+
+$pageTitle = 'ชำระเงิน';
+$pageDescription = 'ชำระเงินผ่าน PromptPay QR Code';
+
+// รับ parameters
+$orderId = intval($_GET['order_id'] ?? 0);
+$amount = floatval($_GET['amount'] ?? 0);
+
+if (!$orderId || !$amount) {
+    header('Location: cart.php');
+    exit();
+}
+
+try {
+    $db = new Database();
+    $conn = $db->getConnection();
+    
+    // ดึงข้อมูลออเดอร์
+    $stmt = $conn->prepare("
+        SELECT o.*, 
+               COUNT(oi.item_id) as item_count,
+               GROUP_CONCAT(CONCAT(oi.product_name, ' x', oi.quantity) SEPARATOR ', ') as items_summary
+        FROM orders o
+        LEFT JOIN order_items oi ON o.order_id = oi.order_id
+        WHERE o.order_id = ? AND o.payment_status = 'pending'
+        GROUP BY o.order_id
+    ");
+    $stmt->execute([$orderId]);
+    $order = $stmt->fetch(PDO::FETCH_ASSOC);
+    
+    if (!$order) {
+        header('Location: cart.php');
+        exit();
+    }
+    
+    // ดึงรายการสินค้าในออเดอร์
+    $stmt = $conn->prepare("
+        SELECT product_name, quantity, unit_price, total_price, options
+        FROM order_items 
+        WHERE order_id = ?
+        ORDER BY item_id ASC
+    ");
+    $stmt->execute([$orderId]);
+    $orderItems = $stmt->fetchAll(PDO::FETCH_ASSOC);
+    
+} catch (Exception $e) {
+    writeLog("Checkout page error: " . $e->getMessage());
+    header('Location: cart.php');
+    exit();
+}
+?>
+
 <!DOCTYPE html>
 <html lang="th">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ชำระเงิน - Smart Order System</title>
+    <title><?php echo $pageTitle; ?> - <?php echo SITE_NAME; ?></title>
+    <meta name="description" content="<?php echo $pageDescription; ?>">
     
     <!-- Bootstrap 5 -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
@@ -11,57 +75,146 @@
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" rel="stylesheet">
     <!-- Sweet Alert 2 -->
     <link href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css" rel="stylesheet">
+    <!-- Animate.css -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css" rel="stylesheet">
     
     <style>
+        :root {
+            --primary-color: #4f46e5;
+            --secondary-color: #10b981;
+            --warning-color: #f59e0b;
+            --danger-color: #ef4444;
+            --light-bg: #f8fafc;
+            --white: #ffffff;
+            --border-color: #e5e7eb;
+            --text-color: #1f2937;
+            --text-muted: #6b7280;
+            --border-radius: 16px;
+            --box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+            --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        
         body {
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             min-height: 100vh;
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            color: var(--text-color);
         }
         
-        .payment-container {
-            background: white;
-            border-radius: 20px;
-            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
-            overflow: hidden;
-            max-width: 600px;
+        .checkout-container {
+            max-width: 900px;
             margin: 0 auto;
+            padding: 2rem 1rem;
         }
         
-        .payment-header {
-            background: linear-gradient(135deg, #4f46e5, #6366f1);
+        .checkout-card {
+            background: var(--white);
+            border-radius: var(--border-radius);
+            box-shadow: var(--box-shadow);
+            overflow: hidden;
+            margin-bottom: 2rem;
+        }
+        
+        .checkout-header {
+            background: linear-gradient(135deg, var(--primary-color), #6366f1);
             color: white;
             padding: 2rem;
             text-align: center;
         }
         
-        .payment-body {
+        .order-summary {
+            padding: 2rem;
+            border-bottom: 2px solid var(--border-color);
+        }
+        
+        .order-info {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1rem;
+            margin-bottom: 1.5rem;
+        }
+        
+        .info-item {
+            background: var(--light-bg);
+            padding: 1rem;
+            border-radius: 12px;
+            text-align: center;
+        }
+        
+        .info-label {
+            font-size: 0.875rem;
+            color: var(--text-muted);
+            margin-bottom: 0.25rem;
+        }
+        
+        .info-value {
+            font-size: 1.125rem;
+            font-weight: 600;
+            color: var(--text-color);
+        }
+        
+        .order-items {
+            margin-top: 1.5rem;
+        }
+        
+        .item-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0.75rem 0;
+            border-bottom: 1px solid var(--border-color);
+        }
+        
+        .item-row:last-child {
+            border-bottom: none;
+        }
+        
+        .item-details {
+            flex: 1;
+        }
+        
+        .item-name {
+            font-weight: 600;
+            margin-bottom: 0.25rem;
+        }
+        
+        .item-options {
+            font-size: 0.875rem;
+            color: var(--text-muted);
+        }
+        
+        .item-price {
+            text-align: right;
+            font-weight: 600;
+        }
+        
+        .payment-section {
             padding: 2rem;
         }
         
         .qr-container {
-            background: #f8fafc;
-            border: 3px dashed #e5e7eb;
+            background: var(--light-bg);
+            border: 3px dashed var(--border-color);
             border-radius: 15px;
             padding: 2rem;
             text-align: center;
             margin-bottom: 2rem;
-            transition: all 0.3s ease;
+            transition: var(--transition);
         }
         
         .qr-container.loaded {
-            border-color: #10b981;
+            border-color: var(--secondary-color);
             background: #f0fdfa;
         }
         
         .qr-code-image {
             max-width: 250px;
             border-radius: 10px;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+            box-shadow: var(--box-shadow);
         }
         
         .amount-display {
-            background: linear-gradient(135deg, #10b981, #059669);
+            background: linear-gradient(135deg, var(--secondary-color), #059669);
             color: white;
             padding: 1.5rem;
             border-radius: 15px;
@@ -97,33 +250,29 @@
             border: 2px solid #ef4444;
         }
         
-        .progress-container {
-            margin: 1rem 0;
-        }
-        
         .countdown-timer {
             font-size: 1.2rem;
             font-weight: bold;
-            color: #4f46e5;
+            color: var(--primary-color);
         }
         
         .slip-upload {
-            background: #f8fafc;
+            background: var(--light-bg);
             border: 2px dashed #cbd5e1;
             border-radius: 15px;
             padding: 2rem;
             text-align: center;
             margin-top: 2rem;
-            transition: all 0.3s ease;
+            transition: var(--transition);
         }
         
         .slip-upload:hover {
-            border-color: #4f46e5;
+            border-color: var(--primary-color);
             background: #f1f5f9;
         }
         
         .slip-upload.dragover {
-            border-color: #10b981;
+            border-color: var(--secondary-color);
             background: #f0fdfa;
         }
         
@@ -131,7 +280,7 @@
             border-radius: 10px;
             padding: 12px 24px;
             font-weight: 500;
-            transition: all 0.3s ease;
+            transition: var(--transition);
         }
         
         .btn-custom:hover {
@@ -160,27 +309,73 @@
             100% { transform: scale(1); opacity: 1; }
         }
         
+        .loading-spinner {
+            width: 40px;
+            height: 40px;
+            border: 4px solid var(--border-color);
+            border-top: 4px solid var(--primary-color);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
         @media (max-width: 768px) {
-            .payment-container {
-                margin: 1rem;
-                border-radius: 15px;
+            .checkout-container {
+                padding: 1rem;
             }
             
-            .payment-header, .payment-body {
+            .checkout-header, .order-summary, .payment-section {
                 padding: 1.5rem;
+            }
+            
+            .order-info {
+                grid-template-columns: 1fr;
             }
             
             .qr-code-image {
                 max-width: 200px;
             }
+            
+            .item-row {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 0.5rem;
+            }
+            
+            .item-price {
+                text-align: left;
+            }
         }
     </style>
 </head>
 <body>
-    <div class="container py-5">
-        <div class="payment-container">
+    <div class="checkout-container">
+        <!-- Navigation -->
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <a href="cart.php" class="btn btn-outline-light btn-custom">
+                <i class="fas fa-arrow-left me-2"></i>
+                กลับไปตะกร้า
+            </a>
+            
+            <div class="text-center">
+                <h5 class="text-white mb-0">ออเดอร์ #<?php echo clean($order['order_number']); ?></h5>
+                <small class="text-white-50">สร้างเมื่อ <?php echo formatDateTime($order['created_at']); ?></small>
+            </div>
+            
+            <a href="queue_status.php" class="btn btn-outline-light btn-custom">
+                <i class="fas fa-clock me-2"></i>
+                ตรวจสอบคิว
+            </a>
+        </div>
+        
+        <!-- Main Checkout Card -->
+        <div class="checkout-card animate__animated animate__fadeInUp">
             <!-- Header -->
-            <div class="payment-header">
+            <div class="checkout-header">
                 <h2 class="mb-2">
                     <i class="fas fa-qrcode me-2"></i>
                     ชำระเงินผ่าน PromptPay
@@ -188,14 +383,80 @@
                 <p class="mb-0 opacity-75">สแกน QR Code หรืออัปโหลดสลิปเพื่อชำระเงิน</p>
             </div>
             
-            <!-- Body -->
-            <div class="payment-body">
+            <!-- Order Summary -->
+            <div class="order-summary">
+                <h4 class="mb-3">
+                    <i class="fas fa-receipt me-2"></i>
+                    สรุปออเดอร์
+                </h4>
+                
+                <!-- Order Info -->
+                <div class="order-info">
+                    <div class="info-item">
+                        <div class="info-label">เลขออเดอร์</div>
+                        <div class="info-value"><?php echo clean($order['order_number']); ?></div>
+                    </div>
+                    <div class="info-item">
+                        <div class="info-label">จำนวนรายการ</div>
+                        <div class="info-value"><?php echo $order['item_count']; ?> รายการ</div>
+                    </div>
+                    <div class="info-item">
+                        <div class="info-label">เวลาเตรียม</div>
+                        <div class="info-value">~<?php echo $order['estimated_prep_time']; ?> นาที</div>
+                    </div>
+                    <div class="info-item">
+                        <div class="info-label">ลูกค้า</div>
+                        <div class="info-value"><?php echo clean($order['customer_name']); ?></div>
+                    </div>
+                </div>
+                
+                <!-- Order Items -->
+                <div class="order-items">
+                    <h5 class="mb-3">รายการสินค้า</h5>
+                    <?php foreach ($orderItems as $item): ?>
+                        <div class="item-row">
+                            <div class="item-details">
+                                <div class="item-name"><?php echo clean($item['product_name']); ?></div>
+                                <?php if ($item['options']): ?>
+                                    <div class="item-options">
+                                        <i class="fas fa-plus me-1"></i>
+                                        <?php echo clean($item['options']); ?>
+                                    </div>
+                                <?php endif; ?>
+                            </div>
+                            <div class="item-price">
+                                <div>จำนวน: <?php echo $item['quantity']; ?></div>
+                                <div class="text-primary fw-bold"><?php echo formatCurrency($item['total_price']); ?></div>
+                            </div>
+                        </div>
+                    <?php endforeach; ?>
+                    
+                    <!-- Order Totals -->
+                    <div class="mt-3 pt-3 border-top">
+                        <div class="d-flex justify-content-between mb-2">
+                            <span>ราคาสินค้า:</span>
+                            <span><?php echo formatCurrency($order['subtotal']); ?></span>
+                        </div>
+                        <div class="d-flex justify-content-between mb-2">
+                            <span>ภาษีมูลค่าเพิ่ม (7%):</span>
+                            <span><?php echo formatCurrency($order['tax_amount']); ?></span>
+                        </div>
+                        <div class="d-flex justify-content-between fw-bold text-primary h5">
+                            <span>ยอดรวมทั้งสิ้น:</span>
+                            <span><?php echo formatCurrency($order['total_amount']); ?></span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Payment Section -->
+            <div class="payment-section">
                 <!-- Amount Display -->
                 <div class="amount-display">
                     <div class="d-flex justify-content-between align-items-center">
                         <div>
-                            <h4 class="mb-1">จำนวนเงิน</h4>
-                            <h2 class="mb-0" id="amount-display">฿0.00</h2>
+                            <h4 class="mb-1">จำนวนเงินที่ต้องชำระ</h4>
+                            <h2 class="mb-0" id="amount-display"><?php echo formatCurrency($order['total_amount']); ?></h2>
                         </div>
                         <div>
                             <i class="fas fa-money-bill-wave fa-2x opacity-75"></i>
@@ -212,9 +473,7 @@
                 <!-- QR Code Section -->
                 <div id="qr-container" class="qr-container">
                     <div id="qr-loading" class="text-center">
-                        <div class="spinner-border text-primary mb-3" role="status">
-                            <span class="visually-hidden">กำลังโหลด...</span>
-                        </div>
+                        <div class="loading-spinner mb-3"></div>
                         <p class="text-muted">กำลังสร้าง QR Code...</p>
                     </div>
                     
@@ -227,7 +486,7 @@
                     <div id="qr-success" class="d-none success-animation">
                         <i class="fas fa-check-circle text-success fa-4x mb-3"></i>
                         <h4 class="text-success mb-2">ชำระเงินสำเร็จ!</h4>
-                        <p class="text-muted">ขอบคุณที่ใช้บริการ</p>
+                        <p class="text-muted">ขอบคุณที่ใช้บริการ กำลังเตรียมอาหารให้คุณ</p>
                     </div>
                 </div>
                 
@@ -297,19 +556,14 @@
     <script>
         // Global variables
         let paymentId = null;
-        let orderId = null;
-        let amount = 0;
+        let orderId = <?php echo $orderId; ?>;
+        let amount = <?php echo $order['total_amount']; ?>;
         let countdownTimer = null;
         let statusCheckInterval = null;
         let timeRemaining = 300; // 5 minutes
         
         // Initialize payment
-        function initializePayment(orderIdParam, amountParam) {
-            orderId = orderIdParam;
-            amount = parseFloat(amountParam);
-            
-            $('#amount-display').text('฿' + amount.toLocaleString('th-TH', {minimumFractionDigits: 2}));
-            
+        function initializePayment() {
             createPayment();
         }
         
@@ -321,7 +575,7 @@
                 data: {
                     order_id: orderId,
                     amount: amount,
-                    description: `Order #${orderId}`
+                    description: `Order #<?php echo $order['order_number']; ?>`
                 },
                 dataType: 'json',
                 success: function(response) {
@@ -448,14 +702,14 @@
             Swal.fire({
                 icon: 'success',
                 title: 'ชำระเงินสำเร็จ!',
-                text: 'ขอบคุณที่ใช้บริการ',
+                text: 'ขอบคุณที่ใช้บริการ กำลังเตรียมอาหารให้คุณ',
                 showConfirmButton: false,
                 timer: 3000
             });
             
             // Redirect after delay
             setTimeout(function() {
-                window.location.href = `order_success.php?payment_id=${paymentId}`;
+                window.location.href = `order_success.php?order_id=${orderId}`;
             }, 3000);
         }
         
@@ -643,12 +897,7 @@
         
         // Initialize when page loads
         $(document).ready(function() {
-            // Get parameters from URL or set defaults for demo
-            const urlParams = new URLSearchParams(window.location.search);
-            const orderIdParam = urlParams.get('order_id') || '123';
-            const amountParam = urlParams.get('amount') || '150.75';
-            
-            initializePayment(orderIdParam, amountParam);
+            initializePayment();
         });
         
         // Cleanup intervals when page unloads
