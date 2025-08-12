@@ -1,3 +1,9 @@
 [2025-08-12 16:32:54] [INFO] [::1] [user_1] User login: admin (ID: 1)
 [2025-08-12 17:29:36] [INFO] [::1] [user_1] Updated menu item ID: 22 by admin
 [2025-08-12 17:37:36] [INFO] [::1] [user_1] System settings updated by admin
+[2025-08-12 18:02:44] [INFO] [::1] [user_1] Updated order status: Order ID 12 to cancelled by admin
+[2025-08-12 18:02:49] [INFO] [::1] [user_1] Updated order status: Order ID 11 to cancelled by admin
+[2025-08-12 18:02:54] [INFO] [::1] [user_1] Updated order status: Order ID 10 to cancelled by admin
+[2025-08-12 18:03:00] [INFO] [::1] [user_1] Updated order status: Order ID 17 to cancelled by admin
+[2025-08-12 18:03:05] [INFO] [::1] [user_1] Updated order status: Order ID 13 to cancelled by admin
+[2025-08-12 18:03:09] [INFO] [::1] [user_1] Updated order status: Order ID 14 to cancelled by admin
