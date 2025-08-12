@@ -1,14 +1,33 @@
 <?php
 /**
- * API จัดการตะกร้าสินค้า
+ * API จัดการตะกร้าสินค้า - แก้ไขปัญหา 500 Error
  * Smart Order Management System
  */
 
+// กำหนดให้ระบบรู้ว่าเป็นการเริ่มต้นที่ถูกต้อง
 define('SYSTEM_INIT', true);
-require_once '../../config/config.php';
-require_once '../../config/database.php';
-require_once '../../config/session.php';
-require_once '../../includes/functions.php';
+
+// จัดการ Error ให้แสดงรายละเอียด (เฉพาะขณะพัฒนา)
+error_reporting(E_ALL);
+ini_set('display_errors', 1);
+
+try {
+    // โหลดไฟล์จำเป็น
+    require_once '../../config/config.php';
+    require_once '../../config/database.php';
+    require_once '../../config/session.php'; 
+    require_once '../../includes/functions.php';
+} catch (Exception $e) {
+    // ถ้าโหลดไฟล์ไม่ได้
+    http_response_code(500);
+    header('Content-Type: application/json; charset=utf-8');
+    echo json_encode([
+        'success' => false,
+        'message' => 'ไม่สามารถโหลดไฟล์ระบบได้: ' . $e->getMessage(),
+        'error' => 'SYSTEM_LOAD_ERROR'
+    ], JSON_UNESCAPED_UNICODE);
+    exit();
+}
 
 // ตั้งค่า Headers
 header('Content-Type: application/json; charset=utf-8');
@@ -16,95 +35,35 @@ header('Access-Control-Allow-Origin: *');
 header('Access-Control-Allow-Methods: GET, POST, PUT, DELETE, OPTIONS');
 header('Access-Control-Allow-Headers: Content-Type, Authorization, X-Requested-With');
 
-// จัดการ OPTIONS request
+// จัดการ CORS OPTIONS request
 if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
     http_response_code(200);
     exit();
 }
 
+// เริ่มต้น session
+try {
+    SessionManager::start();
+} catch (Exception $e) {
+    sendJsonResponse([
+        'success' => false,
+        'message' => 'ไม่สามารถเริ่มต้น session ได้: ' . $e->getMessage(),
+        'error' => 'SESSION_ERROR'
+    ], 500);
+}
+
+// ดักจับ errors ทั้งหมด
 try {
     $action = $_GET['action'] ?? $_POST['action'] ?? '';
     $method = $_SERVER['REQUEST_METHOD'];
     
+    // ตรวจสอบ action ที่ส่งมา
+    if (empty($action)) {
+        throw new Exception('ไม่ได้ระบุการดำเนินการ');
+    }
+    
     switch ($action) {
         
-        // ดึงจำนวนสินค้าในตะกร้า
-        case 'count':
-            $count = getCartItemCount();
-            sendJsonResponse([
-                'success' => true,
-                'count' => $count
-            ]);
-            break;
-            
-        // ดึงรายการสินค้าในตะกร้า
-        case 'get':
-            $cartItems = getCartItems();
-            $cartDetails = [];
-            $total = 0;
-            
-            if (!empty($cartItems)) {
-                $db = new Database();
-                $conn = $db->getConnection();
-                
-                foreach ($cartItems as $itemKey => $item) {
-                    $stmt = $conn->prepare("
-                        SELECT p.*, c.name as category_name
-                        FROM products p
-                        LEFT JOIN categories c ON p.category_id = c.category_id
-                        WHERE p.product_id = ? AND p.is_available = 1
-                    ");
-                    $stmt->execute([$item['product_id']]);
-                    $product = $stmt->fetch();
-                    
-                    if ($product) {
-                        $subtotal = $product['price'] * $item['quantity'];
-                        
-                        // คำนวณราคาตัวเลือก
-                        $optionsTotal = 0;
-                        $optionDetails = [];
-                        if (!empty($item['options'])) {
-                            foreach ($item['options'] as $optionId) {
-                                $stmt = $conn->prepare("
-                                    SELECT name, price_adjustment 
-                                    FROM product_options 
-                                    WHERE option_id = ?
-                                ");
-                                $stmt->execute([$optionId]);
-                                $option = $stmt->fetch();
-                                if ($option) {
-                                    $optionsTotal += $option['price_adjustment'];
-                                    $optionDetails[] = $option;
-                                }
-                            }
-                            $subtotal += ($optionsTotal * $item['quantity']);
-                        }
-                        
-                        $cartDetails[] = [
-                            'key' => $itemKey,
-                            'product_id' => $product['product_id'],
-                            'name' => $product['name'],
-                            'price' => $product['price'],
-                            'quantity' => $item['quantity'],
-                            'subtotal' => $subtotal,
-                            'image' => $product['image'],
-                            'category' => $product['category_name'],
-                            'options' => $optionDetails
-                        ];
-                        
-                        $total += $subtotal;
-                    }
-                }
-            }
-            
-            sendJsonResponse([
-                'success' => true,
-                'items' => $cartDetails,
-                'total' => $total,
-                'count' => count($cartDetails)
-            ]);
-            break;
-            
         // เพิ่มสินค้าลงตะกร้า
         case 'add':
             if ($method !== 'POST') {
@@ -124,12 +83,12 @@ try {
             $conn = $db->getConnection();
             
             $stmt = $conn->prepare("
-                SELECT product_id, name, price, is_available 
+                SELECT product_id, name, price, is_available, image
                 FROM products 
                 WHERE product_id = ?
             ");
             $stmt->execute([$productId]);
-            $product = $stmt->fetch();
+            $product = $stmt->fetch(PDO::FETCH_ASSOC);
             
             if (!$product) {
                 throw new Exception('ไม่พบสินค้าที่เลือก');
@@ -169,6 +128,83 @@ try {
             ]);
             break;
             
+        // ดึงจำนวนสินค้าในตะกร้า
+        case 'count':
+            $count = getCartItemCount();
+            sendJsonResponse([
+                'success' => true,
+                'count' => $count
+            ]);
+            break;
+            
+        // ดึงรายการสินค้าในตะกร้า
+        case 'get':
+            $cartItems = getCartItems();
+            $cartDetails = [];
+            $total = 0;
+            
+            if (!empty($cartItems)) {
+                $db = new Database();
+                $conn = $db->getConnection();
+                
+                foreach ($cartItems as $itemKey => $item) {
+                    $stmt = $conn->prepare("
+                        SELECT p.*, c.name as category_name
+                        FROM products p
+                        LEFT JOIN categories c ON p.category_id = c.category_id
+                        WHERE p.product_id = ? AND p.is_available = 1
+                    ");
+                    $stmt->execute([$item['product_id']]);
+                    $product = $stmt->fetch(PDO::FETCH_ASSOC);
+                    
+                    if ($product) {
+                        $subtotal = $product['price'] * $item['quantity'];
+                        
+                        // คำนวณราคาตัวเลือก
+                        $optionsTotal = 0;
+                        $optionDetails = [];
+                        if (!empty($item['options'])) {
+                            foreach ($item['options'] as $optionId) {
+                                $stmt = $conn->prepare("
+                                    SELECT name, price_adjustment 
+                                    FROM product_options 
+                                    WHERE option_id = ?
+                                ");
+                                $stmt->execute([$optionId]);
+                                $option = $stmt->fetch(PDO::FETCH_ASSOC);
+                                if ($option) {
+                                    $optionsTotal += $option['price_adjustment'];
+                                    $optionDetails[] = $option;
+                                }
+                            }
+                            $subtotal += ($optionsTotal * $item['quantity']);
+                        }
+                        
+                        $cartDetails[] = [
+                            'key' => $itemKey,
+                            'product_id' => $product['product_id'],
+                            'name' => $product['name'],
+                            'price' => $product['price'],
+                            'quantity' => $item['quantity'],
+                            'subtotal' => $subtotal,
+                            'image' => $product['image'],
+                            'category' => $product['category_name'],
+                            'options' => $optionDetails
+                        ];
+                        
+                        $total += $subtotal;
+                    }
+                }
+            }
+            
+            sendJsonResponse([
+                'success' => true,
+                'items' => $cartDetails,
+                'total' => $total,
+                'count' => count($cartDetails)
+            ]);
+            break;
+            
         // อัปเดตจำนวนสินค้า
         case 'update':
             if ($method !== 'POST') {
@@ -189,7 +225,7 @@ try {
             }
             
             $cartItems[$itemKey]['quantity'] = $quantity;
-            SessionManager::set(CartSession::CART_KEY, $cartItems);
+            SessionManager::set('cart_items', $cartItems);
             
             // คำนวณราคาใหม่
             $db = new Database();
@@ -197,7 +233,7 @@ try {
             
             $stmt = $conn->prepare("SELECT price FROM products WHERE product_id = ?");
             $stmt->execute([$cartItems[$itemKey]['product_id']]);
-            $product = $stmt->fetch();
+            $product = $stmt->fetch(PDO::FETCH_ASSOC);
             
             $itemSubtotal = $product['price'] * $quantity;
             
@@ -231,7 +267,7 @@ try {
             }
             
             unset($cartItems[$itemKey]);
-            SessionManager::set(CartSession::CART_KEY, $cartItems);
+            SessionManager::set('cart_items', $cartItems);
             
             $cartEmpty = empty($cartItems);
             $cartSummary = $cartEmpty ? null : calculateCartSummary();
@@ -259,18 +295,26 @@ try {
             break;
             
         default:
-            throw new Exception('Action not found');
+            throw new Exception('การดำเนินการไม่ถูกต้อง: ' . $action);
     }
     
 } catch (Exception $e) {
-    http_response_code(400);
+    // บันทึก error
+    if (function_exists('writeLog')) {
+        writeLog("Cart API Error: " . $e->getMessage() . " | Action: " . ($action ?? 'unknown') . " | Method: " . $method, 'ERROR');
+    }
+    
     sendJsonResponse([
         'success' => false,
         'message' => $e->getMessage(),
-        'error' => $e->getMessage()
-    ]);
-    
-    writeLog("Cart API Error: " . $e->getMessage() . " | Action: " . ($action ?? 'unknown'));
+        'error' => $e->getMessage(),
+        'debug' => [
+            'action' => $action ?? 'not_set',
+            'method' => $method,
+            'post_data' => $_POST,
+            'get_data' => $_GET
+        ]
+    ], 400);
 }
 
 /**
@@ -290,45 +334,42 @@ function calculateCartSummary() {
             foreach ($cartItems as $item) {
                 $stmt = $conn->prepare("SELECT price FROM products WHERE product_id = ?");
                 $stmt->execute([$item['product_id']]);
-                $product = $stmt->fetch();
+                $product = $stmt->fetch(PDO::FETCH_ASSOC);
                 
                 if ($product) {
-                    $itemTotal = $product['price'] * $item['quantity'];
+                    $itemPrice = $product['price'];
                     
-                    // เพิ่มราคาตัวเลือก
+                    // คำนวณราคาตัวเลือก
                     if (!empty($item['options'])) {
                         foreach ($item['options'] as $optionId) {
                             $stmt = $conn->prepare("SELECT price_adjustment FROM product_options WHERE option_id = ?");
                             $stmt->execute([$optionId]);
-                            $option = $stmt->fetch();
+                            $option = $stmt->fetch(PDO::FETCH_ASSOC);
                             if ($option) {
-                                $itemTotal += ($option['price_adjustment'] * $item['quantity']);
+                                $itemPrice += $option['price_adjustment'];
                             }
                         }
                     }
                     
-                    $subtotal += $itemTotal;
-                    $itemCount++;
+                    $subtotal += ($itemPrice * $item['quantity']);
                     $totalQuantity += $item['quantity'];
+                    $itemCount++;
                 }
             }
         } catch (Exception $e) {
-            writeLog("Cart summary calculation error: " . $e->getMessage());
+            if (function_exists('writeLog')) {
+                writeLog("Calculate cart summary error: " . $e->getMessage(), 'ERROR');
+            }
         }
     }
     
-    // คำนวณภาษีและค่าบริการ
-    $taxRate = 7; // 7%
-    $serviceChargeRate = 0; // 0%
-    
-    $tax = ($subtotal * $taxRate) / 100;
-    $service = ($subtotal * $serviceChargeRate) / 100;
-    $total = $subtotal + $tax + $service;
+    // คำนวณภาษี (ถ้ามี)
+    $tax = $subtotal * 0.07; // VAT 7%
+    $total = $subtotal + $tax;
     
     return [
         'subtotal' => $subtotal,
         'tax' => $tax,
-        'service' => $service,
         'total' => $total,
         'item_count' => $itemCount,
         'total_quantity' => $totalQuantity

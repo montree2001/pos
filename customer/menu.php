@@ -897,6 +897,301 @@ $cartCount = getCartItemCount();
         }
         
         console.log('Menu page loaded successfully');
+
+
+
+
+        // ========================================
+// ฟังก์ชันจัดการตะกร้าสินค้า - แก้ไขปัญหา
+// ========================================
+
+// Global variables
+let cartUpdateInProgress = false;
+
+// ปรับปรุงฟังก์ชัน addToCart
+function addToCart(productId, productName, price) {
+    // ป้องกันการคลิกซ้ำ
+    if (cartUpdateInProgress) return;
+    
+    const btn = event.target;
+    const originalText = btn.innerHTML;
+    
+    // ตรวจสอบข้อมูล
+    if (!productId || !productName) {
+        showToast('error', 'ข้อมูลสินค้าไม่ถูกต้อง');
+        return;
+    }
+    
+    cartUpdateInProgress = true;
+    
+    // แสดง loading
+    btn.innerHTML = '<span class="loading-spinner"></span> กำลังเพิ่ม...';
+    btn.disabled = true;
+    
+    // ส่งข้อมูลไป API
+    $.ajax({
+        url: 'api/cart.php', // แก้ไขเส้นทาง
+        type: 'POST',
+        timeout: 10000, // timeout 10 วินาที
+        data: {
+            action: 'add',
+            product_id: productId,
+            quantity: 1
+        },
+        dataType: 'json',
+        success: function(response) {
+            console.log('Cart response:', response); // Debug
+            
+            if (response.success) {
+                // แสดงผลสำเร็จ
+                btn.innerHTML = '<i class="fas fa-check me-2"></i>เพิ่มแล้ว!';
+                btn.style.background = 'linear-gradient(135deg, #10b981, #059669)';
+                
+                // อัปเดตจำนวนในตะกร้า
+                updateCartCount(response.cart_count);
+                
+                // แสดง toast notification
+                showToast('success', `เพิ่ม "${productName}" ลงตะกร้าแล้ว!`);
+                
+                // รีเซ็ตปุ่มหลัง 2 วินาที
+                setTimeout(() => {
+                    btn.innerHTML = originalText;
+                    btn.disabled = false;
+                    btn.style.background = '';
+                    cartUpdateInProgress = false;
+                }, 2000);
+                
+            } else {
+                throw new Error(response.message || 'เกิดข้อผิดพลาดไม่ทราบสาเหตุ');
+            }
+        },
+        error: function(xhr, status, error) {
+            console.error('Cart Error Details:', {
+                status: xhr.status,
+                statusText: xhr.statusText,
+                responseText: xhr.responseText,
+                error: error
+            });
+            
+            let errorMessage = 'ไม่สามารถเพิ่มสินค้าได้';
+            
+            // แสดงข้อผิดพลาดตามสถานะ
+            if (xhr.status === 404) {
+                errorMessage = 'ไม่พบไฟล์ API กรุณาตรวจสอบการติดตั้ง';
+            } else if (xhr.status === 500) {
+                errorMessage = 'เกิดข้อผิดพลาดภายในเซิร์ฟเวอร์';
+            } else if (status === 'timeout') {
+                errorMessage = 'การเชื่อมต่อหมดเวลา กรุณาลองใหม่';
+            } else if (xhr.responseText) {
+                try {
+                    const response = JSON.parse(xhr.responseText);
+                    errorMessage = response.message || errorMessage;
+                } catch (e) {
+                    // ไม่สามารถ parse JSON ได้
+                }
+            }
+            
+            showToast('error', errorMessage);
+            
+            // รีเซ็ตปุ่ม
+            btn.innerHTML = originalText;
+            btn.disabled = false;
+            cartUpdateInProgress = false;
+        }
+    });
+}
+
+// อัปเดตจำนวนสินค้าในตะกร้า
+function updateCartCount(count) {
+    const badge = $('#cartBadge');
+    const cartBtn = $('.cart-btn, .header-btn[title="ตะกร้าสินค้า"]');
+    
+    if (count > 0) {
+        badge.text(count).show();
+        cartBtn.addClass('has-items');
+        
+        // อนิเมชัน bounce
+        badge.addClass('animate__animated animate__bounce');
+        setTimeout(() => {
+            badge.removeClass('animate__animated animate__bounce');
+        }, 1000);
+    } else {
+        badge.hide();
+        cartBtn.removeClass('has-items');
+    }
+}
+
+// โหลดจำนวนสินค้าในตะกร้าเมื่อเริ่มต้น
+function loadCartCount() {
+    $.ajax({
+        url: 'api/cart.php',
+        type: 'GET',
+        data: { action: 'count' },
+        dataType: 'json',
+        success: function(response) {
+            if (response.success) {
+                updateCartCount(response.count);
+            }
+        },
+        error: function(xhr, status, error) {
+            console.log('Load cart count error:', error);
+            // ไม่แสดง error สำหรับการโหลดจำนวน
+        }
+    });
+}
+
+// แสดง Toast Notification
+function showToast(type, message, duration = 3000) {
+    // ลบ toast เก่า (ถ้ามี)
+    $('.toast-notification').remove();
+    
+    const toastHtml = `
+        <div class="toast-notification toast-${type}">
+            <div class="toast-content">
+                <i class="fas fa-${type === 'success' ? 'check-circle' : 'exclamation-circle'}"></i>
+                <span>${message}</span>
+            </div>
+            <button class="toast-close" onclick="$(this).parent().remove()">
+                <i class="fas fa-times"></i>
+            </button>
+        </div>
+    `;
+    
+    $('body').append(toastHtml);
+    
+    // แสดง toast
+    const toast = $('.toast-notification');
+    setTimeout(() => {
+        toast.addClass('show');
+    }, 100);
+    
+    // ซ่อน toast หลังเวลาที่กำหนด
+    setTimeout(() => {
+        toast.removeClass('show');
+        setTimeout(() => {
+            toast.remove();
+        }, 300);
+    }, duration);
+}
+
+// ฟังก์ชันเปิด Chatbot
+function openChatbot() {
+    window.open('chatbot.php', '_blank', 'width=400,height=600,scrollbars=yes,resizable=yes');
+}
+
+// เมื่อ Document พร้อม
+$(document).ready(function() {
+    // โหลดจำนวนสินค้าในตะกร้า
+    loadCartCount();
+    
+    // ตั้งค่า AJAX global error handler
+    $(document).ajaxError(function(event, xhr, settings, error) {
+        if (settings.url && settings.url.includes('cart.php')) {
+            console.error('Global AJAX Error for cart:', {
+                url: settings.url,
+                status: xhr.status,
+                error: error
+            });
+        }
+    });
+    
+    // เพิ่ม CSS สำหรับ animations
+    if (!$('#cart-animations').length) {
+        $('head').append(`
+            <style id="cart-animations">
+                .loading-spinner {
+                    display: inline-block;
+                    width: 12px;
+                    height: 12px;
+                    border: 2px solid rgba(255,255,255,0.3);
+                    border-top: 2px solid white;
+                    border-radius: 50%;
+                    animation: spin 1s linear infinite;
+                }
+                
+                @keyframes spin {
+                    0% { transform: rotate(0deg); }
+                    100% { transform: rotate(360deg); }
+                }
+                
+                .cart-badge {
+                    background: #e74c3c;
+                    color: white;
+                    border-radius: 50%;
+                    padding: 2px 6px;
+                    font-size: 12px;
+                    position: absolute;
+                    top: -8px;
+                    right: -8px;
+                    min-width: 18px;
+                    text-align: center;
+                }
+                
+                .has-items {
+                    animation: pulse 2s infinite;
+                }
+                
+                @keyframes pulse {
+                    0% { transform: scale(1); }
+                    50% { transform: scale(1.1); }
+                    100% { transform: scale(1); }
+                }
+                
+                .toast-notification {
+                    position: fixed;
+                    top: 20px;
+                    right: 20px;
+                    background: white;
+                    border-radius: 8px;
+                    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+                    padding: 16px;
+                    display: flex;
+                    align-items: center;
+                    gap: 12px;
+                    z-index: 9999;
+                    transform: translateX(400px);
+                    transition: transform 0.3s ease;
+                    max-width: 300px;
+                }
+                
+                .toast-notification.show {
+                    transform: translateX(0);
+                }
+                
+                .toast-success {
+                    border-left: 4px solid #10b981;
+                }
+                
+                .toast-error {
+                    border-left: 4px solid #e74c3c;
+                }
+                
+                .toast-content {
+                    display: flex;
+                    align-items: center;
+                    gap: 8px;
+                    flex: 1;
+                }
+                
+                .toast-success i {
+                    color: #10b981;
+                }
+                
+                .toast-error i {
+                    color: #e74c3c;
+                }
+                
+                .toast-close {
+                    background: none;
+                    border: none;
+                    color: #666;
+                    cursor: pointer;
+                    padding: 4px;
+                }
+            </style>
+        `);
+    }
+});
     </script>
 </body>
 </html>
