@@ -301,6 +301,7 @@ class CartSession {
                 'added_at' => time()
             ];
         }
+        return true;
     }
     
     /**
@@ -310,12 +311,14 @@ class CartSession {
         SessionManager::start();
         
         if ($quantity <= 0) {
-            self::removeItem($itemKey);
+            return self::removeItem($itemKey);
         } else {
             if (isset($_SESSION[self::CART_KEY][$itemKey])) {
                 $_SESSION[self::CART_KEY][$itemKey]['quantity'] = $quantity;
+                return true;
             }
         }
+        return false;
     }
     
     /**
@@ -326,7 +329,9 @@ class CartSession {
         
         if (isset($_SESSION[self::CART_KEY][$itemKey])) {
             unset($_SESSION[self::CART_KEY][$itemKey]);
+            return true;
         }
+        return false;
     }
     
     /**
@@ -334,6 +339,7 @@ class CartSession {
      */
     public static function clear() {
         SessionManager::remove(self::CART_KEY);
+        return true;
     }
     
     /**
@@ -417,7 +423,7 @@ function getCurrentUserRole() {
 
 // Cart Session
 function addToCart($productId, $quantity = 1, $options = []) {
-    CartSession::addItem($productId, $quantity, $options);
+    return CartSession::addItem($productId, $quantity, $options);
 }
 
 function getCartItems() {
@@ -428,8 +434,16 @@ function getCartItemCount() {
     return CartSession::getItemCount();
 }
 
+function updateCartQuantity($itemKey, $quantity) {
+    return CartSession::updateQuantity($itemKey, $quantity);
+}
+
+function removeFromCart($itemKey) {
+    return CartSession::removeItem($itemKey);
+}
+
 function clearCart() {
-    CartSession::clear();
+    return CartSession::clear();
 }
 
 // เริ่มต้น Session อัตโนมัติ

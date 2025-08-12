@@ -28,6 +28,8 @@ $search = trim($_GET['search'] ?? '');
 $orders = [];
 $error = null;
 
+// ใช้ฟังก์ชันจาก functions.php แทน
+
 try {
     $db = new Database();
     $conn = $db->getConnection();
@@ -42,7 +44,7 @@ try {
     }
     
     if (!empty($search)) {
-        $whereClause .= " AND (o.queue_number LIKE ? OR o.order_id LIKE ? OR u.fullname LIKE ?)";
+        $whereClause .= " AND (o.queue_number LIKE ? OR o.order_number LIKE ? OR o.customer_name LIKE ?)";
         $searchTerm = "%$search%";
         $params[] = $searchTerm;
         $params[] = $searchTerm;
@@ -51,10 +53,9 @@ try {
     
     // ดึงข้อมูลออเดอร์
     $stmt = $conn->prepare("
-        SELECT o.*, u.fullname as customer_name,
+        SELECT o.*,
                COUNT(oi.item_id) as item_count
         FROM orders o
-        LEFT JOIN users u ON o.user_id = u.user_id
         LEFT JOIN order_items oi ON o.order_id = oi.order_id
         $whereClause
         GROUP BY o.order_id
@@ -328,6 +329,16 @@ try {
             border-color: var(--pos-gray-400);
         }
         
+        .action-btn.btn-edit {
+            color: var(--pos-primary);
+            border-color: var(--pos-primary);
+        }
+        
+        .action-btn.btn-edit:hover {
+            background: var(--pos-primary);
+            color: white;
+        }
+        
         .action-btn.btn-call {
             color: var(--pos-info);
             border-color: var(--pos-info);
@@ -581,7 +592,7 @@ try {
         <?php if ($error): ?>
             <div class="alert alert-danger">
                 <i class="fas fa-exclamation-triangle me-2"></i>
-                <?php echo clean($error); ?>
+                <?php echo htmlspecialchars($error); ?>
             </div>
         <?php endif; ?>
         
@@ -591,7 +602,7 @@ try {
                 <div>
                     <label class="form-label">ค้นหา</label>
                     <input type="text" class="form-control" name="search" 
-                           value="<?php echo clean($search); ?>" 
+                           value="<?php echo htmlspecialchars($search); ?>" 
                            placeholder="หมายเลขคิว, ออเดอร์, หรือชื่อลูกค้า">
                 </div>
                 
@@ -653,7 +664,7 @@ try {
             <div class="section-header">
                 <span>
                     <i class="fas fa-shopping-cart me-2"></i>
-                    ออเดอร์วันที่ <?php echo formatDate($dateFilter, 'd/m/Y'); ?>
+                    ออเดอร์วันที่ <?php echo date('d/m/Y', strtotime($dateFilter)); ?>
                 </span>
                 <span class="badge bg-primary"><?php echo count($orders); ?> รายการ</span>
             </div>
@@ -674,15 +685,15 @@ try {
                             <div class="order-header">
                                 <div class="d-flex align-items-center gap-3">
                                     <div class="queue-number">
-                                        <?php echo clean($order['queue_number'] ?: 'ORD-' . $order['order_id']); ?>
+                                        <?php echo htmlspecialchars($order['queue_number'] ?: 'ORD-' . $order['order_id']); ?>
                                     </div>
                                     <div>
                                         <div class="fw-bold fs-5">
-                                            <?php echo clean($order['customer_name'] ?: 'ลูกค้าทั่วไป'); ?>
+                                            <?php echo htmlspecialchars($order['customer_name'] ?: 'ลูกค้าทั่วไป'); ?>
                                         </div>
                                         <small class="text-muted">
                                             <i class="fas fa-clock me-1"></i>
-                                            <?php echo formatDate($order['created_at'], 'H:i'); ?>
+                                            <?php echo date('H:i', strtotime($order['created_at'])); ?>
                                         </small>
                                     </div>
                                 </div>
@@ -697,7 +708,7 @@ try {
                                     <div class="detail-item">
                                         <span class="detail-label">ยอดรวม:</span>
                                         <span class="detail-value text-success fw-bold">
-                                            <?php echo formatCurrency($order['total_price']); ?>
+                                            ฿<?php echo number_format($order['total_price'], 2); ?>
                                         </span>
                                     </div>
                                     <div class="detail-item">
@@ -742,10 +753,10 @@ try {
                             <?php if ($order['table_number'] || $order['notes']): ?>
                                 <div class="mt-3 p-3 bg-light rounded">
                                     <?php if ($order['table_number']): ?>
-                                        <small><strong>โต๊ะ:</strong> <?php echo clean($order['table_number']); ?></small><br>
+                                        <small><strong>โต๊ะ:</strong> <?php echo htmlspecialchars($order['table_number']); ?></small><br>
                                     <?php endif; ?>
                                     <?php if ($order['notes']): ?>
-                                        <small><strong>หมายเหตุ:</strong> <?php echo clean($order['notes']); ?></small>
+                                        <small><strong>หมายเหตุ:</strong> <?php echo htmlspecialchars($order['notes']); ?></small>
                                     <?php endif; ?>
                                 </div>
                             <?php endif; ?>
@@ -753,6 +764,10 @@ try {
                             <div class="order-actions">
                                 <button class="action-btn btn-view" onclick="viewOrderDetails(<?php echo $order['order_id']; ?>)">
                                     <i class="fas fa-eye"></i>ดูรายละเอียด
+                                </button>
+                                
+                                <button class="action-btn btn-edit" onclick="editOrder(<?php echo $order['order_id']; ?>)">
+                                    <i class="fas fa-edit"></i>แก้ไข
                                 </button>
                                 
                                 <a href="print_receipt.php?order_id=<?php echo $order['order_id']; ?>" 
@@ -913,10 +928,11 @@ try {
                         method: 'POST',
                         headers: {
                             'Content-Type': 'application/json',
+                            'Accept': 'application/json'
                         },
                         body: JSON.stringify({
                             action: 'update_status',
-                            order_id: orderId,
+                            order_id: parseInt(orderId),
                             status: newStatus
                         })
                     })
@@ -980,8 +996,269 @@ try {
         
         // View order details
         function viewOrderDetails(orderId) {
-            // TODO: Show order details in modal or navigate to details page
-            window.open(`${SITE_URL}/pos/order_details.php?id=${orderId}`, '_blank');
+            // Show order details in modal
+            showOrderDetailsModal(orderId);
+        }
+        
+        // Edit order function
+        function editOrder(orderId) {
+            showEditOrderModal(orderId);
+        }
+        
+        // Show order details modal
+        function showOrderDetailsModal(orderId) {
+            // Fetch order details
+            fetch(`${SITE_URL}/api/orders.php?action=get_details&order_id=${orderId}`)
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        displayOrderDetailsModal(data.order, data.items);
+                    } else {
+                        Swal.fire({
+                            icon: 'error',
+                            title: 'เกิดข้อผิดพลาด',
+                            text: data.error || 'ไม่สามารถโหลดข้อมูลได้'
+                        });
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'เกิดข้อผิดพลาด',
+                        text: 'ไม่สามารถเชื่อมต่อกับเซิร์ฟเวอร์ได้'
+                    });
+                });
+        }
+        
+        // Display order details modal
+        function displayOrderDetailsModal(order, items) {
+            let itemsHtml = '';
+            items.forEach(item => {
+                itemsHtml += `
+                    <div class="row mb-2">
+                        <div class="col-6">${item.product_name}</div>
+                        <div class="col-2 text-center">${item.quantity}</div>
+                        <div class="col-2 text-end">฿${parseFloat(item.unit_price).toFixed(2)}</div>
+                        <div class="col-2 text-end">฿${parseFloat(item.subtotal).toFixed(2)}</div>
+                    </div>
+                `;
+            });
+            
+            Swal.fire({
+                title: `รายละเอียดออเดอร์ #${order.order_number}`,
+                html: `
+                    <div class="text-start">
+                        <div class="row mb-3">
+                            <div class="col-6"><strong>ลูกค้า:</strong> ${order.customer_name || 'ลูกค้าทั่วไป'}</div>
+                            <div class="col-6"><strong>เวลา:</strong> ${new Date(order.created_at).toLocaleString('th-TH')}</div>
+                        </div>
+                        <div class="row mb-3">
+                            <div class="col-6"><strong>ประเภท:</strong> ${getOrderTypeText(order.order_type)}</div>
+                            <div class="col-6"><strong>สถานะ:</strong> ${getOrderStatusText(order.status)}</div>
+                        </div>
+                        ${order.table_number ? `<div class="mb-3"><strong>โต๊ะ:</strong> ${order.table_number}</div>` : ''}
+                        ${order.notes ? `<div class="mb-3"><strong>หมายเหตุ:</strong> ${order.notes}</div>` : ''}
+                        
+                        <hr>
+                        <h5>รายการสินค้า</h5>
+                        <div class="row mb-2">
+                            <div class="col-6"><strong>สินค้า</strong></div>
+                            <div class="col-2 text-center"><strong>จำนวน</strong></div>
+                            <div class="col-2 text-end"><strong>ราคา</strong></div>
+                            <div class="col-2 text-end"><strong>รวม</strong></div>
+                        </div>
+                        ${itemsHtml}
+                        <hr>
+                        <div class="row">
+                            <div class="col-8 text-end"><strong>ยอดรวมทั้งสิ้น:</strong></div>
+                            <div class="col-4 text-end"><strong>฿${parseFloat(order.total_price).toFixed(2)}</strong></div>
+                        </div>
+                    </div>
+                `,
+                width: '800px',
+                showConfirmButton: false,
+                showCancelButton: true,
+                cancelButtonText: 'ปิด'
+            });
+        }
+        
+        // Show edit order modal
+        function showEditOrderModal(orderId) {
+            // Fetch order details first
+            fetch(`${SITE_URL}/api/orders.php?action=get_details&order_id=${orderId}`)
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        displayEditOrderModal(data.order);
+                    } else {
+                        Swal.fire({
+                            icon: 'error',
+                            title: 'เกิดข้อผิดพลาด',
+                            text: data.error || 'ไม่สามารถโหลดข้อมูลได้'
+                        });
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'เกิดข้อผิดพลาด',
+                        text: 'ไม่สามารถเชื่อมต่อกับเซิร์ฟเวอร์ได้'
+                    });
+                });
+        }
+        
+        // Display edit order modal
+        function displayEditOrderModal(order) {
+            Swal.fire({
+                title: `แก้ไขออเดอร์ #${order.order_number}`,
+                html: `
+                    <div class="text-start">
+                        <div class="mb-3">
+                            <label class="form-label">ชื่อลูกค้า</label>
+                            <input type="text" class="form-control" id="edit_customer_name" 
+                                   value="${order.customer_name || ''}" 
+                                   maxlength="100" 
+                                   placeholder="ระบุชื่อลูกค้า">
+                            <small class="form-text text-muted">สูงสุด 100 ตัวอักษร</small>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">หมายเลขโต๊ะ</label>
+                            <input type="text" class="form-control" id="edit_table_number" 
+                                   value="${order.table_number || ''}" 
+                                   maxlength="10" 
+                                   placeholder="เช่น A1, B2, VIP01">
+                            <small class="form-text text-muted">สูงสุด 10 ตัวอักษร</small>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">ประเภทออเดอร์</label>
+                            <select class="form-select" id="edit_order_type">
+                                <option value="dine_in" ${order.order_type === 'dine_in' ? 'selected' : ''}>ทานที่ร้าน</option>
+                                <option value="takeaway" ${order.order_type === 'takeaway' ? 'selected' : ''}>ซื้อกลับ</option>
+                                <option value="delivery" ${order.order_type === 'delivery' ? 'selected' : ''}>จัดส่ง</option>
+                            </select>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">หมายเหตุ</label>
+                            <textarea class="form-control" id="edit_notes" rows="3" 
+                                      maxlength="500" 
+                                      placeholder="หมายเหตุเพิ่มเติม (ถ้ามี)">${order.notes || ''}</textarea>
+                            <small class="form-text text-muted">สูงสุด 500 ตัวอักษร</small>
+                        </div>
+                    </div>
+                `,
+                width: '600px',
+                showCancelButton: true,
+                confirmButtonText: 'บันทึก',
+                cancelButtonText: 'ยกเลิก',
+                preConfirm: () => {
+                    const customerName = document.getElementById('edit_customer_name').value.trim();
+                    const tableNumber = document.getElementById('edit_table_number').value.trim();
+                    const orderType = document.getElementById('edit_order_type').value;
+                    const notes = document.getElementById('edit_notes').value.trim();
+                    
+                    // Validation
+                    if (customerName.length > 100) {
+                        Swal.showValidationMessage('ชื่อลูกค้าต้องไม่เกิน 100 ตัวอักษร');
+                        return false;
+                    }
+                    
+                    if (tableNumber.length > 10) {
+                        Swal.showValidationMessage('หมายเลขโต๊ะต้องไม่เกิน 10 ตัวอักษร');
+                        return false;
+                    }
+                    
+                    if (notes.length > 500) {
+                        Swal.showValidationMessage('หมายเหตุต้องไม่เกิน 500 ตัวอักษร');
+                        return false;
+                    }
+                    
+                    return {
+                        order_id: order.order_id,
+                        customer_name: customerName,
+                        table_number: tableNumber,
+                        order_type: orderType,
+                        notes: notes
+                    };
+                }
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    updateOrderDetails(result.value);
+                }
+            });
+        }
+        
+        // Update order details
+        function updateOrderDetails(orderData) {
+            Swal.fire({
+                title: 'กำลังบันทึก...',
+                allowOutsideClick: false,
+                didOpen: () => {
+                    Swal.showLoading();
+                }
+            });
+            
+            fetch(`${SITE_URL}/api/orders.php`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    action: 'update_details',
+                    ...orderData
+                })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    Swal.fire({
+                        icon: 'success',
+                        title: 'บันทึกสำเร็จ',
+                        text: 'อัปเดตข้อมูลออเดอร์เรียบร้อยแล้ว',
+                        timer: 1500,
+                        showConfirmButton: false
+                    }).then(() => {
+                        location.reload();
+                    });
+                } else {
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'เกิดข้อผิดพลาด',
+                        text: data.error || 'ไม่สามารถบันทึกข้อมูลได้'
+                    });
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                Swal.fire({
+                    icon: 'error',
+                    title: 'เกิดข้อผิดพลาด',
+                    text: 'ไม่สามารถเชื่อมต่อกับเซิร์ฟเวอร์ได้'
+                });
+            });
+        }
+        
+        // Helper functions for display
+        function getOrderTypeText(type) {
+            const types = {
+                'dine_in': 'ทานที่ร้าน',
+                'takeaway': 'ซื้อกลับ',
+                'delivery': 'จัดส่ง'
+            };
+            return types[type] || type;
+        }
+        
+        function getOrderStatusText(status) {
+            const statuses = {
+                'pending': 'รอยืนยัน',
+                'confirmed': 'ยืนยันแล้ว',
+                'preparing': 'กำลังเตรียม',
+                'ready': 'พร้อมเสิร์ฟ',
+                'completed': 'เสร็จสิ้น',
+                'cancelled': 'ยกเลิก'
+            };
+            return statuses[status] || status;
         }
         
         // Play voice message using Web Speech API

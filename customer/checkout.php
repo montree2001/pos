@@ -30,10 +30,11 @@ try {
     $stmt = $conn->prepare("
         SELECT o.*, 
                COUNT(oi.item_id) as item_count,
-               GROUP_CONCAT(CONCAT(oi.product_name, ' x', oi.quantity) SEPARATOR ', ') as items_summary
+               GROUP_CONCAT(CONCAT(p.name, ' x', oi.quantity) SEPARATOR ', ') as items_summary
         FROM orders o
         LEFT JOIN order_items oi ON o.order_id = oi.order_id
-        WHERE o.order_id = ? AND o.payment_status = 'pending'
+        LEFT JOIN products p ON oi.product_id = p.product_id
+        WHERE o.order_id = ? AND o.payment_status = 'unpaid'
         GROUP BY o.order_id
     ");
     $stmt->execute([$orderId]);
@@ -46,8 +47,9 @@ try {
     
     // ดึงรายการสินค้าในออเดอร์
     $stmt = $conn->prepare("
-        SELECT product_name, quantity, unit_price, total_price, options
-        FROM order_items 
+        SELECT p.name as product_name, oi.quantity, oi.unit_price, oi.subtotal as total_price, oi.notes as options
+        FROM order_items oi
+        LEFT JOIN products p ON oi.product_id = p.product_id 
         WHERE order_id = ?
         ORDER BY item_id ASC
     ");
@@ -362,8 +364,8 @@ try {
             </a>
             
             <div class="text-center">
-                <h5 class="text-white mb-0">ออเดอร์ #<?php echo clean($order['order_number']); ?></h5>
-                <small class="text-white-50">สร้างเมื่อ <?php echo formatDateTime($order['created_at']); ?></small>
+                <h5 class="text-white mb-0">ออเดอร์ #<?php echo htmlspecialchars($order['order_number']); ?></h5>
+                <small class="text-white-50">สร้างเมื่อ <?php echo date('d/m/Y H:i', strtotime($order['created_at'])); ?></small>
             </div>
             
             <a href="queue_status.php" class="btn btn-outline-light btn-custom">
@@ -394,7 +396,7 @@ try {
                 <div class="order-info">
                     <div class="info-item">
                         <div class="info-label">เลขออเดอร์</div>
-                        <div class="info-value"><?php echo clean($order['order_number']); ?></div>
+                        <div class="info-value"><?php echo htmlspecialchars($order['order_number']); ?></div>
                     </div>
                     <div class="info-item">
                         <div class="info-label">จำนวนรายการ</div>
@@ -402,11 +404,11 @@ try {
                     </div>
                     <div class="info-item">
                         <div class="info-label">เวลาเตรียม</div>
-                        <div class="info-value">~<?php echo $order['estimated_prep_time']; ?> นาที</div>
+                        <div class="info-value">~<?php echo $order['preparation_time']; ?> นาที</div>
                     </div>
                     <div class="info-item">
                         <div class="info-label">ลูกค้า</div>
-                        <div class="info-value"><?php echo clean($order['customer_name']); ?></div>
+                        <div class="info-value"><?php echo htmlspecialchars($order['customer_name']); ?></div>
                     </div>
                 </div>
                 
@@ -416,34 +418,47 @@ try {
                     <?php foreach ($orderItems as $item): ?>
                         <div class="item-row">
                             <div class="item-details">
-                                <div class="item-name"><?php echo clean($item['product_name']); ?></div>
+                                <div class="item-name"><?php echo htmlspecialchars($item['product_name']); ?></div>
                                 <?php if ($item['options']): ?>
                                     <div class="item-options">
                                         <i class="fas fa-plus me-1"></i>
-                                        <?php echo clean($item['options']); ?>
+                                        <?php echo htmlspecialchars($item['options']); ?>
                                     </div>
                                 <?php endif; ?>
                             </div>
                             <div class="item-price">
                                 <div>จำนวน: <?php echo $item['quantity']; ?></div>
-                                <div class="text-primary fw-bold"><?php echo formatCurrency($item['total_price']); ?></div>
+                                <div class="text-primary fw-bold">฿<?php echo number_format($item['total_price'], 2); ?></div>
                             </div>
                         </div>
                     <?php endforeach; ?>
                     
                     <!-- Order Totals -->
                     <div class="mt-3 pt-3 border-top">
+                        <?php
+                        // คำนวณ subtotal จากผลรวมของ order_items
+                        $subtotal = array_sum(array_column($orderItems, 'total_price'));
+                        $finalTotal = $order['total_price'];
+                        $taxAmount = $order['tax_amount'] ?? 0;
+                        $serviceCharge = $order['service_charge'] ?? 0;
+                        ?>
                         <div class="d-flex justify-content-between mb-2">
                             <span>ราคาสินค้า:</span>
-                            <span><?php echo formatCurrency($order['subtotal']); ?></span>
+                            <span>฿<?php echo number_format($subtotal, 2); ?></span>
                         </div>
+                        <?php if ($serviceCharge > 0): ?>
+                        <div class="d-flex justify-content-between mb-2">
+                            <span>ค่าบริการ:</span>
+                            <span>฿<?php echo number_format($serviceCharge, 2); ?></span>
+                        </div>
+                        <?php endif; ?>
                         <div class="d-flex justify-content-between mb-2">
                             <span>ภาษีมูลค่าเพิ่ม (7%):</span>
-                            <span><?php echo formatCurrency($order['tax_amount']); ?></span>
+                            <span>฿<?php echo number_format($taxAmount, 2); ?></span>
                         </div>
                         <div class="d-flex justify-content-between fw-bold text-primary h5">
                             <span>ยอดรวมทั้งสิ้น:</span>
-                            <span><?php echo formatCurrency($order['total_amount']); ?></span>
+                            <span>฿<?php echo number_format($finalTotal, 2); ?></span>
                         </div>
                     </div>
                 </div>
@@ -456,7 +471,7 @@ try {
                     <div class="d-flex justify-content-between align-items-center">
                         <div>
                             <h4 class="mb-1">จำนวนเงินที่ต้องชำระ</h4>
-                            <h2 class="mb-0" id="amount-display"><?php echo formatCurrency($order['total_amount']); ?></h2>
+                            <h2 class="mb-0" id="amount-display">฿<?php echo number_format($order['total_price'], 2); ?></h2>
                         </div>
                         <div>
                             <i class="fas fa-money-bill-wave fa-2x opacity-75"></i>
@@ -511,6 +526,11 @@ try {
                     <button type="button" class="btn btn-success btn-custom" id="check-status" onclick="checkPaymentStatus()">
                         <i class="fas fa-search me-2"></i>ตรวจสอบสถานะ
                     </button>
+                    
+                    <!-- Demo button for testing -->
+                    <button type="button" class="btn btn-warning btn-custom" id="simulate-payment" onclick="simulatePayment()" style="display: none;">
+                        <i class="fas fa-magic me-2"></i>จำลองการชำระเงิน (ทดสอบ)
+                    </button>
                 </div>
                 
                 <!-- Slip Upload Section -->
@@ -557,7 +577,7 @@ try {
         // Global variables
         let paymentId = null;
         let orderId = <?php echo $orderId; ?>;
-        let amount = <?php echo $order['total_amount']; ?>;
+        let amount = <?php echo $order['total_price']; ?>;
         let countdownTimer = null;
         let statusCheckInterval = null;
         let timeRemaining = 300; // 5 minutes
@@ -569,6 +589,12 @@ try {
         
         // Create payment
         function createPayment() {
+            // Show loading
+            $('#qr-loading').removeClass('d-none');
+            $('#qr-content').addClass('d-none');
+            $('#qr-success').addClass('d-none');
+            $('#refresh-qr').prop('disabled', true);
+            
             $.ajax({
                 url: 'api/create_payment.php',
                 type: 'POST',
@@ -578,7 +604,10 @@ try {
                     description: `Order #<?php echo $order['order_number']; ?>`
                 },
                 dataType: 'json',
+                timeout: 10000,
                 success: function(response) {
+                    console.log('Payment creation response:', response);
+                    
                     if (response.success) {
                         paymentId = response.payment_id;
                         timeRemaining = response.expires_in || 300;
@@ -586,12 +615,24 @@ try {
                         displayQRCode(response.qr_code_url);
                         startCountdown();
                         startStatusCheck();
+                        $('#refresh-qr').prop('disabled', false);
                     } else {
                         showError('ไม่สามารถสร้างการชำระเงินได้: ' + response.message);
+                        $('#refresh-qr').prop('disabled', false);
                     }
                 },
-                error: function() {
-                    showError('เกิดข้อผิดพลาดในการเชื่อมต่อ');
+                error: function(xhr, status, error) {
+                    console.error('Payment creation error:', error);
+                    let errorMsg = 'เกิดข้อผิดพลาดในการเชื่อมต่อ';
+                    
+                    if (status === 'timeout') {
+                        errorMsg = 'การเชื่อมต่อหมดเวลา กรุณาลองใหม่';
+                    } else if (xhr.responseJSON && xhr.responseJSON.message) {
+                        errorMsg = xhr.responseJSON.message;
+                    }
+                    
+                    showError(errorMsg);
+                    $('#refresh-qr').prop('disabled', false);
                 }
             });
         }
@@ -895,9 +936,49 @@ try {
             });
         }
         
+        // Simulate payment for testing
+        function simulatePayment() {
+            if (!paymentId) {
+                showError('ไม่พบข้อมูลการชำระเงิน');
+                return;
+            }
+            
+            Swal.fire({
+                title: 'จำลองการชำระเงิน',
+                text: 'นี่เป็นฟังก์ชันสำหรับการทดสอบ',
+                icon: 'info',
+                showCancelButton: true,
+                confirmButtonText: 'ยืนยันการชำระเงิน',
+                cancelButtonText: 'ยกเลิก'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    // Simulate successful payment
+                    $.ajax({
+                        url: 'api/check_payment_status.php',
+                        type: 'POST',
+                        data: { 
+                            payment_id: paymentId,
+                            simulate_success: true 
+                        },
+                        success: function() {
+                            handlePaymentSuccess();
+                        },
+                        error: function() {
+                            handlePaymentSuccess(); // Force success for demo
+                        }
+                    });
+                }
+            });
+        }
+        
         // Initialize when page loads
         $(document).ready(function() {
             initializePayment();
+            
+            // Show demo button in development mode
+            if (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') {
+                $('#simulate-payment').show();
+            }
         });
         
         // Cleanup intervals when page unloads

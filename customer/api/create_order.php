@@ -215,11 +215,11 @@ function createOrderFromCart() {
         $stmt = $conn->prepare("
             INSERT INTO orders (
                 order_number, customer_name, customer_phone, 
-                subtotal, service_charge, tax_amount, total_amount,
-                order_source, order_status, payment_status,
-                notes, estimated_prep_time, created_at
+                total_price, service_charge, tax_amount,
+                source, status, payment_status,
+                notes, preparation_time, created_at
             ) VALUES (
-                ?, ?, ?, ?, ?, ?, ?, 'online', 'pending', 'pending', ?, ?, NOW()
+                ?, ?, ?, ?, ?, ?, 'online', 'pending', 'unpaid', ?, ?, NOW()
             )
         ");
         
@@ -227,10 +227,9 @@ function createOrderFromCart() {
             $orderNumber,
             $customerName,
             $customerPhone,
-            $subtotal,
+            $totalAmount,
             $serviceCharge,
             $taxAmount,
-            $totalAmount,
             $orderNotes,
             $estimatedPrepTime
         ]);
@@ -240,21 +239,19 @@ function createOrderFromCart() {
         // บันทึกรายการสินค้า
         $stmt = $conn->prepare("
             INSERT INTO order_items (
-                order_id, product_id, product_name, quantity, 
-                unit_price, total_price, options, notes
-            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+                order_id, product_id, quantity, 
+                unit_price, subtotal, notes
+            ) VALUES (?, ?, ?, ?, ?, ?)
         ");
         
         foreach ($orderItems as $item) {
             $stmt->execute([
                 $orderId,
                 $item['product_id'],
-                $item['product_name'],
                 $item['quantity'],
                 $item['unit_price'],
                 $item['line_total'],
-                $item['options'],
-                ''
+                $item['options'] // Store options in notes field since there's no options column
             ]);
         }
         
@@ -299,12 +296,4 @@ function generateOrderNumber() {
     return $prefix . $date . $random;
 }
 
-/**
- * ส่งการตอบกลับ JSON
- */
-function sendJsonResponse($data, $statusCode = 200) {
-    http_response_code($statusCode);
-    echo json_encode($data, JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT);
-    exit();
-}
 ?>

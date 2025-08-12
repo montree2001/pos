@@ -144,11 +144,28 @@ try {
         'item_count' => 0,
         'total_quantity' => 0
     ];
+    
+} catch (Exception $e) {
+    writeLog("Cart page error: " . $e->getMessage());
+    $cartDetails = [];
+    $cartSummary = [
+        'subtotal' => 0,
+        'service_charge' => 0,
+        'service_charge_rate' => 0,
+        'tax' => 0,
+        'tax_rate' => 0,
+        'total' => 0,
+        'item_count' => 0,
+        'total_quantity' => 0
+    ];
 }
 
 // ดึงหมวดหมู่สำหรับแนะนำ
 $suggestedCategories = [];
 try {
+    $db = new Database();
+    $conn = $db->getConnection();
+    
     $stmt = $conn->prepare("
         SELECT category_id, name, description 
         FROM categories 
@@ -1425,25 +1442,29 @@ try {
             $.ajax({
                 url: 'api/create_order.php',
                 type: 'POST',
+                contentType: 'application/x-www-form-urlencoded; charset=UTF-8',
                 data: {
                     action: 'create_from_cart',
-                    customer_info: {
-                        name: 'ลูกค้าเดินหน้า',
-                        phone: '',
-                        notes: ''
-                    }
+                    'customer_info[name]': 'ลูกค้าเดินหน้า',
+                    'customer_info[phone]': '',
+                    'customer_info[notes]': ''
                 },
                 dataType: 'json',
                 timeout: 15000,
                 success: function(response) {
+                    console.log('Order creation response:', response);
                     if (response.success) {
                         showToast('success', 'สร้างออเดอร์สำเร็จ กำลังไปหน้าชำระเงิน...');
                         
-                        // Redirect to checkout page with order ID
+                        // Redirect to checkout page with order ID immediately
+                        const redirectUrl = `checkout.php?order_id=${response.order_id}&amount=${response.total_amount}`;
+                        console.log('Redirecting to:', redirectUrl);
+                        
                         setTimeout(() => {
-                            window.location.href = `checkout.php?order_id=${response.order_id}&amount=${response.total_amount}`;
-                        }, 1500);
+                            window.location.href = redirectUrl;
+                        }, 500);
                     } else {
+                        console.error('Order creation failed:', response);
                         showToast('error', response.message || 'ไม่สามารถสร้างออเดอร์ได้');
                         btn.prop('disabled', false).html(originalText);
                     }
