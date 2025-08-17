@@ -5,10 +5,10 @@
  */
 
 define('SYSTEM_INIT', true);
-require_once '../config/config.php';
-require_once '../config/database.php';
-require_once '../config/session.php';
-require_once '../includes/functions.php';
+require_once dirname(__DIR__) . '/config/config.php';
+require_once dirname(__DIR__) . '/config/database.php';
+require_once dirname(__DIR__) . '/config/session.php';
+require_once dirname(__DIR__) . '/includes/functions.php';
 
 $pageTitle = 'จอแสดงคิว';
 
@@ -76,16 +76,37 @@ try {
     <!-- Font Awesome -->
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" rel="stylesheet">
     
+    <!-- Google Fonts - Kanit -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Kanit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    
     <style>
         :root {
-            --queue-primary: #4f46e5;
-            --queue-success: #10b981;
-            --queue-warning: #f59e0b;
-            --queue-danger: #ef4444;
-            --queue-info: #3b82f6;
-            --queue-light: #f8fafc;
-            --queue-white: #ffffff;
-            --queue-dark: #1f2937;
+            /* สีหลักที่สบายตา */
+            --primary-gradient: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            --soft-blue: #3b82f6;
+            --soft-green: #10b981;
+            --soft-orange: #f59e0b;
+            --soft-red: #ef4444;
+            --soft-purple: #8b5cf6;
+            --soft-teal: #06b6d4;
+            
+            /* พื้นหลังและโครงสร้าง */
+            --bg-gradient: linear-gradient(135deg, #e0e7ff 0%, #f0f4ff 50%, #fef3c7 100%);
+            --card-bg: rgba(255, 255, 255, 0.95);
+            --card-shadow: 0 10px 40px rgba(0, 0, 0, 0.1);
+            --text-primary: #1f2937;
+            --text-secondary: #6b7280;
+            --text-light: #9ca3af;
+            
+            /* สีสำหรับสถานะคิว */
+            --ready-color: #059669;
+            --ready-bg: linear-gradient(135deg, #d1fae5 0%, #a7f3d0 100%);
+            --preparing-color: #d97706;
+            --preparing-bg: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%);
+            --waiting-color: #2563eb;
+            --waiting-bg: linear-gradient(135deg, #dbeafe 0%, #bfdbfe 100%);
         }
         
         * {
@@ -95,11 +116,12 @@ try {
         }
         
         body {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: var(--queue-white);
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: var(--bg-gradient);
+            color: var(--text-primary);
+            font-family: 'Kanit', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             overflow-x: hidden;
             min-height: 100vh;
+            font-weight: 400;
         }
         
         .queue-container {
@@ -109,23 +131,29 @@ try {
         
         .queue-header {
             text-align: center;
-            margin-bottom: 30px;
-            padding: 20px;
-            background: rgba(255, 255, 255, 0.1);
-            border-radius: 20px;
-            backdrop-filter: blur(10px);
+            margin-bottom: 40px;
+            padding: 30px;
+            background: var(--card-bg);
+            border-radius: 25px;
+            box-shadow: var(--card-shadow);
+            border: 1px solid rgba(255, 255, 255, 0.8);
         }
         
         .queue-header h1 {
-            font-size: 3rem;
-            font-weight: 700;
-            margin-bottom: 10px;
-            text-shadow: 0 2px 10px rgba(0,0,0,0.3);
+            font-size: 3.5rem;
+            font-weight: 600;
+            margin-bottom: 15px;
+            background: var(--primary-gradient);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            font-family: 'Kanit', sans-serif;
         }
         
         .queue-header .datetime {
-            font-size: 1.2rem;
-            opacity: 0.9;
+            font-size: 1.3rem;
+            color: var(--text-secondary);
+            font-weight: 400;
         }
         
         .queue-sections {
@@ -136,56 +164,69 @@ try {
         }
         
         .queue-section {
-            background: rgba(255, 255, 255, 0.1);
-            border-radius: 20px;
-            padding: 25px;
-            backdrop-filter: blur(10px);
-            border: 1px solid rgba(255, 255, 255, 0.2);
+            background: var(--card-bg);
+            border-radius: 25px;
+            padding: 30px;
+            box-shadow: var(--card-shadow);
+            border: 1px solid rgba(255, 255, 255, 0.8);
+            transition: transform 0.3s ease;
+        }
+        
+        .queue-section:hover {
+            transform: translateY(-5px);
         }
         
         .section-title {
             display: flex;
             align-items: center;
             justify-content: center;
-            gap: 15px;
-            font-size: 1.8rem;
-            font-weight: 700;
-            margin-bottom: 25px;
+            gap: 20px;
+            font-size: 2rem;
+            font-weight: 600;
+            margin-bottom: 30px;
             text-align: center;
+            font-family: 'Kanit', sans-serif;
         }
         
         .section-title.ready {
-            color: #34d399;
+            color: var(--ready-color);
         }
         
         .section-title.preparing {
-            color: #fbbf24;
+            color: var(--preparing-color);
         }
         
         .section-title.waiting {
-            color: #60a5fa;
+            color: var(--waiting-color);
         }
         
         .section-icon {
-            width: 60px;
-            height: 60px;
+            width: 70px;
+            height: 70px;
             border-radius: 50%;
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 1.5rem;
+            font-size: 1.8rem;
+            color: white;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+            transition: transform 0.3s ease;
+        }
+        
+        .section-icon:hover {
+            transform: scale(1.1);
         }
         
         .section-icon.ready {
-            background: #34d399;
+            background: linear-gradient(135deg, #059669, #34d399);
         }
         
         .section-icon.preparing {
-            background: #fbbf24;
+            background: linear-gradient(135deg, #d97706, #fbbf24);
         }
         
         .section-icon.waiting {
-            background: #60a5fa;
+            background: linear-gradient(135deg, #2563eb, #60a5fa);
         }
         
         .queue-grid {
@@ -195,53 +236,67 @@ try {
         }
         
         .queue-item {
-            background: rgba(255, 255, 255, 0.9);
-            color: var(--queue-dark);
-            border-radius: 15px;
-            padding: 20px;
+            border-radius: 20px;
+            padding: 25px;
             text-align: center;
             transition: all 0.3s ease;
             border: 2px solid transparent;
+            position: relative;
+            overflow: hidden;
+            box-shadow: 0 5px 20px rgba(0, 0, 0, 0.1);
+        }
+        
+        .queue-item:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
         }
         
         .queue-item.ready {
-            background: rgba(52, 211, 153, 0.9);
-            color: white;
-            animation: pulse-ready 2s infinite;
+            background: var(--ready-bg);
+            color: var(--ready-color);
+            border-color: var(--ready-color);
+            animation: pulse-ready 3s infinite;
         }
         
         .queue-item.preparing {
-            background: rgba(251, 191, 36, 0.9);
-            color: var(--queue-dark);
+            background: var(--preparing-bg);
+            color: var(--preparing-color);
+            border-color: var(--preparing-color);
         }
         
         .queue-item.waiting {
-            background: rgba(96, 165, 250, 0.9);
-            color: white;
+            background: var(--waiting-bg);
+            color: var(--waiting-color);
+            border-color: var(--waiting-color);
         }
         
         .queue-number {
-            font-size: 2.5rem;
+            font-size: 2.8rem;
             font-weight: 700;
-            margin-bottom: 10px;
-            text-shadow: 0 2px 5px rgba(0,0,0,0.2);
+            margin-bottom: 12px;
+            font-family: 'Kanit', sans-serif;
+            text-shadow: 0 2px 5px rgba(0,0,0,0.1);
+            line-height: 1;
         }
         
         .queue-customer {
-            font-size: 1rem;
-            font-weight: 600;
-            margin-bottom: 5px;
+            font-size: 1.1rem;
+            font-weight: 500;
+            margin-bottom: 8px;
+            font-family: 'Kanit', sans-serif;
         }
         
         .queue-time {
-            font-size: 0.9rem;
-            opacity: 0.8;
+            font-size: 1rem;
+            opacity: 0.7;
+            font-weight: 400;
         }
         
         .queue-amount {
-            font-size: 0.9rem;
+            font-size: 1rem;
             font-weight: 600;
-            margin-top: 5px;
+            margin-top: 8px;
+            font-family: 'Kanit', sans-serif;
         }
         
         .waiting-section {
@@ -255,55 +310,77 @@ try {
         }
         
         .waiting-item {
-            background: rgba(255, 255, 255, 0.1);
-            border-radius: 12px;
-            padding: 15px;
+            background: var(--card-bg);
+            border-radius: 15px;
+            padding: 20px;
             text-align: center;
-            border: 1px solid rgba(255, 255, 255, 0.2);
+            border: 2px solid var(--waiting-color);
+            transition: all 0.3s ease;
+            box-shadow: 0 3px 10px rgba(0, 0, 0, 0.1);
+        }
+        
+        .waiting-item:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.15);
         }
         
         .waiting-number {
-            font-size: 1.8rem;
+            font-size: 2rem;
             font-weight: 700;
-            margin-bottom: 8px;
+            margin-bottom: 10px;
+            color: var(--waiting-color);
+            font-family: 'Kanit', sans-serif;
         }
         
         .waiting-customer {
-            font-size: 0.9rem;
-            opacity: 0.9;
+            font-size: 1rem;
+            color: var(--text-secondary);
+            font-weight: 500;
+            font-family: 'Kanit', sans-serif;
         }
         
         .empty-state {
             text-align: center;
-            padding: 40px;
-            opacity: 0.7;
+            padding: 50px;
+            color: var(--text-light);
         }
         
         .empty-state i {
-            font-size: 3rem;
-            margin-bottom: 15px;
+            font-size: 3.5rem;
+            margin-bottom: 20px;
+            opacity: 0.5;
+        }
+        
+        .empty-state p {
+            font-size: 1.2rem;
+            font-family: 'Kanit', sans-serif;
+            font-weight: 400;
         }
         
         .current-time {
             position: fixed;
-            top: 20px;
-            right: 20px;
-            background: rgba(0, 0, 0, 0.3);
-            padding: 10px 20px;
-            border-radius: 25px;
-            font-size: 1.1rem;
+            top: 25px;
+            right: 25px;
+            background: var(--card-bg);
+            color: var(--text-primary);
+            padding: 15px 25px;
+            border-radius: 30px;
+            font-size: 1.2rem;
             font-weight: 600;
+            font-family: 'Kanit', sans-serif;
+            box-shadow: var(--card-shadow);
+            border: 1px solid rgba(255, 255, 255, 0.8);
         }
         
         /* Animations */
         @keyframes pulse-ready {
             0%, 100% {
                 transform: scale(1);
-                box-shadow: 0 0 20px rgba(52, 211, 153, 0.5);
+                box-shadow: 0 5px 20px rgba(5, 150, 105, 0.3);
             }
             50% {
-                transform: scale(1.05);
-                box-shadow: 0 0 30px rgba(52, 211, 153, 0.8);
+                transform: scale(1.02);
+                box-shadow: 0 8px 30px rgba(5, 150, 105, 0.5);
             }
         }
         
@@ -322,45 +399,145 @@ try {
             animation: slideIn 0.5s ease-out;
         }
         
-        /* TV/Large Screen Optimizations */
-        @media (min-width: 1200px) {
+        /* Extra Large Screens (4K/Large TV) */
+        @media (min-width: 1800px) {
             .queue-header h1 {
-                font-size: 4rem;
+                font-size: 5rem;
             }
             
             .section-title {
-                font-size: 2.2rem;
+                font-size: 2.8rem;
             }
             
             .queue-number {
-                font-size: 3rem;
+                font-size: 3.5rem;
             }
             
             .queue-grid {
-                grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+                grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+                gap: 25px;
+            }
+            
+            .queue-container {
+                padding: 40px;
             }
         }
         
-        /* Mobile/Tablet Responsive */
-        @media (max-width: 768px) {
-            .queue-sections {
-                grid-template-columns: 1fr;
+        /* Large Screens (TV/Large Monitor) */
+        @media (min-width: 1200px) and (max-width: 1799px) {
+            .queue-header h1 {
+                font-size: 4.2rem;
             }
             
+            .section-title {
+                font-size: 2.4rem;
+            }
+            
+            .queue-number {
+                font-size: 3.2rem;
+            }
+            
+            .queue-grid {
+                grid-template-columns: repeat(auto-fill, minmax(270px, 1fr));
+                gap: 20px;
+            }
+            
+            .waiting-grid {
+                grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+                gap: 18px;
+            }
+        }
+        
+        /* Tablet Landscape */
+        @media (max-width: 1199px) and (min-width: 769px) {
+            .queue-header h1 {
+                font-size: 3rem;
+            }
+            
+            .section-title {
+                font-size: 1.8rem;
+            }
+            
+            .queue-number {
+                font-size: 2.5rem;
+            }
+        }
+        
+        /* Mobile/Tablet Portrait */
+        @media (max-width: 768px) {
+            .queue-container {
+                padding: 15px;
+            }
+            
+            .queue-sections {
+                grid-template-columns: 1fr;
+                gap: 20px;
+            }
+            
+            .queue-header {
+                padding: 20px;
+                margin-bottom: 25px;
+            }
+            
+            .queue-header h1 {
+                font-size: 2.5rem;
+            }
+            
+            .section-title {
+                font-size: 1.6rem;
+                gap: 15px;
+            }
+            
+            .section-icon {
+                width: 50px;
+                height: 50px;
+                font-size: 1.3rem;
+            }
+            
+            .queue-number {
+                font-size: 2.2rem;
+            }
+            
+            .queue-grid {
+                grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+                gap: 12px;
+            }
+            
+            .waiting-grid {
+                grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+                gap: 10px;
+            }
+            
+            .current-time {
+                top: 15px;
+                right: 15px;
+                padding: 10px 15px;
+                font-size: 1rem;
+            }
+        }
+        
+        /* Very Small Mobile */
+        @media (max-width: 480px) {
             .queue-header h1 {
                 font-size: 2rem;
             }
             
             .section-title {
-                font-size: 1.4rem;
+                font-size: 1.3rem;
+                flex-direction: column;
+                gap: 10px;
             }
             
             .queue-number {
-                font-size: 2rem;
+                font-size: 1.8rem;
             }
             
             .queue-grid {
-                grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+                grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+            }
+            
+            .waiting-grid {
+                grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
             }
         }
     </style>
@@ -380,6 +557,11 @@ try {
             </h1>
             <div class="datetime">
                 <?php echo formatDate(date('Y-m-d H:i:s'), 'd/m/Y'); ?> • <?php echo SITE_NAME; ?>
+                <br>
+                <small style="opacity: 0.7; font-size: 0.9rem;">
+                    รวม <?php echo count($readyQueue) + count($preparingQueue) + count($currentQueue); ?> คิว | 
+                    F11: เต็มจอ | Space: รีเฟรช
+                </small>
             </div>
         </div>
         
@@ -559,6 +741,18 @@ try {
                 location.reload();
             }
             
+            // Spacebar for refresh
+            if (e.code === 'Space') {
+                e.preventDefault();
+                location.reload();
+            }
+            
+            // 'R' for refresh
+            if (e.key.toLowerCase() === 'r' && !e.ctrlKey) {
+                e.preventDefault();
+                location.reload();
+            }
+            
             // Esc to exit fullscreen
             if (e.key === 'Escape' && document.fullscreenElement) {
                 document.exitFullscreen();
@@ -570,15 +764,36 @@ try {
             const readyItems = document.querySelectorAll('.queue-item.ready');
             if (readyItems.length > 0 && 'speechSynthesis' in window) {
                 const queueNumbers = Array.from(readyItems).map(item => 
-                    item.querySelector('.queue-number').textContent
+                    item.querySelector('.queue-number').textContent.trim()
                 );
                 
                 if (queueNumbers.length > 0) {
-                    const message = `หมายเลขคิว ${queueNumbers.join(', ')} กรุณามารับออเดอร์ที่เคาน์เตอร์`;
+                    let message;
+                    if (queueNumbers.length === 1) {
+                        message = `คิวหมายเลข ${queueNumbers[0]} พร้อมเสิร์ฟแล้วครับ กรุณามารับที่เคาน์เตอร์`;
+                    } else {
+                        message = `คิวหมายเลข ${queueNumbers.slice(0, -1).join(', ')} และ ${queueNumbers.slice(-1)} พร้อมเสิร์ฟแล้วครับ กรุณามารับที่เคาน์เตอร์`;
+                    }
+                    
                     const utterance = new SpeechSynthesisUtterance(message);
                     utterance.lang = 'th-TH';
-                    utterance.rate = 0.8;
+                    utterance.rate = 0.9;
+                    utterance.volume = 0.8;
+                    
+                    // หาเสียงภาษาไทย
+                    const voices = speechSynthesis.getVoices();
+                    const thaiVoice = voices.find(voice => 
+                        voice.lang === 'th-TH' || 
+                        voice.lang.startsWith('th') ||
+                        voice.name.includes('Thai')
+                    );
+                    
+                    if (thaiVoice) {
+                        utterance.voice = thaiVoice;
+                    }
+                    
                     speechSynthesis.speak(utterance);
+                    console.log('Announced:', message);
                 }
             }
         }

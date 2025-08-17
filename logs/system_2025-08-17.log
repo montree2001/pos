@@ -1,0 +1,278 @@
+[2025-08-17 18:42:46] [INFO] [::1] [user_2] Order created successfully: Order ID 32, Number ORD202508171518, Amount 100
+[2025-08-17 18:43:07] [INFO] [::1] [user_2] Order success page error: SQLSTATE[42S22]: Column not found: 1054 Unknown column 'oi.product_name' in 'field list'
+[2025-08-17 18:43:42] [INFO] [::1] [user_1] User login: admin (ID: 1)
+[2025-08-17 18:47:53] [INFO] [::1] [guest] Voice queue error: SQLSTATE[42S02]: Base table or view not found: 1146 Table 'smart_order.queue_calls' doesn't exist
+[2025-08-17 18:49:20] [INFO] [::1] [guest] Voice queue error: Queue not found or invalid status
+[2025-08-17 18:50:07] [INFO] [::1] [guest] Queue called: Q250001 by POS System
+[2025-08-17 18:50:14] [INFO] [::1] [guest] Queue called: Q250001 by POS System
+[2025-08-17 18:50:21] [INFO] [::1] [guest] Queue called: Q250003 by POS System
+[2025-08-17 18:51:11] [INFO] [::1] [guest] Queue called: Q250730001 by POS System
+[2025-08-17 18:58:16] [INFO] [::1] [guest] Voice queue error: Queue not found or invalid status
+[2025-08-17 19:02:45] [INFO] [::1] [guest] Queue called: Q250001 by POS System
+[2025-08-17 19:02:47] [INFO] [::1] [guest] Queue called: Q250001 by POS System
+[2025-08-17 19:02:49] [INFO] [::1] [guest] Queue called: Q250003 by POS System
+[2025-08-17 19:02:52] [INFO] [::1] [guest] Queue called: Q250004 by POS System
+[2025-08-17 19:02:54] [INFO] [::1] [guest] Queue called: Q250005 by POS System
+[2025-08-17 19:02:55] [INFO] [::1] [guest] Queue called: Q250005 by POS System
+[2025-08-17 19:02:56] [INFO] [::1] [guest] Queue called: Q250005 by POS System
+[2025-08-17 19:02:58] [INFO] [::1] [guest] Queue called: Q250005 by POS System
+[2025-08-17 19:03:03] [INFO] [::1] [guest] Queue called: Q250001 by POS System
+[2025-08-17 19:03:32] [INFO] [::1] [guest] Queue called: Q250001 by POS System
+[2025-08-17 19:03:34] [INFO] [::1] [guest] Queue called: Q250003 by POS System
+[2025-08-17 19:03:35] [INFO] [::1] [guest] Queue called: Q250004 by POS System
+[2025-08-17 19:03:37] [INFO] [::1] [guest] Queue called: Q250812002 by POS System
+[2025-08-17 19:03:39] [INFO] [::1] [guest] Queue called: Q250730001 by POS System
+[2025-08-17 19:07:03] [INFO] [::1] [guest] Voice queue error: Queue not found or invalid status
+[2025-08-17 19:32:41] [INFO] [::1] [guest] Queue called: Q250001 by POS System
+[2025-08-17 19:32:49] [INFO] [::1] [guest] Queue called: Q250003 by POS System
+[2025-08-17 19:32:54] [INFO] [::1] [guest] Queue called: Q250004 by POS System
+[2025-08-17 19:33:15] [INFO] [::1] [guest] Queue called: Q250001 by POS System
+[2025-08-17 19:33:19] [INFO] [::1] [guest] Queue called: Q250003 by POS System
+[2025-08-17 19:33:25] [INFO] [::1] [guest] Queue called: Q250004 by POS System
+[2025-08-17 19:33:31] [INFO] [::1] [guest] Queue called: Q250005 by POS System
+[2025-08-17 19:34:47] [INFO] [::1] [guest] Queue called: Q250003 by POS System
+[2025-08-17 19:34:51] [INFO] [::1] [guest] Queue called: Q250004 by POS System
+[2025-08-17 19:34:54] [INFO] [::1] [guest] Queue called: Q250005 by POS System
+[2025-08-17 19:34:55] [INFO] [::1] [guest] Queue called: Q250001 by POS System
+[2025-08-17 19:36:32] [INFO] [::1] [guest] Queue called: Q250003 by POS System
+[2025-08-17 19:36:38] [INFO] [::1] [guest] Queue called: Q250001 by POS System
+[2025-08-17 19:36:42] [INFO] [::1] [guest] Queue called: Q250003 by POS System
+[2025-08-17 19:36:47] [INFO] [::1] [guest] Queue called: Q250003 by POS System
+[2025-08-17 19:37:06] [INFO] [::1] [guest] Queue called: Q250001 by POS System
+[2025-08-17 19:44:17] [INFO] [::1] [user_1] Order created successfully: Order ID 33, Number ORD202508175316, Amount 125
+[2025-08-17 19:44:37] [INFO] [::1] [user_1] Order success page error: SQLSTATE[42S22]: Column not found: 1054 Unknown column 'oi.product_name' in 'field list'
+[2025-08-17 21:27:49] [INFO] [::1] [guest] Queue called: Q250001 by POS System
+[2025-08-17 21:29:13] [INFO] [::1] [guest] Queue called: Q250001 by POS System
+[2025-08-17 21:29:17] [INFO] [::1] [guest] Queue called: Q250003 by POS System
+[2025-08-17 21:29:23] [INFO] [::1] [guest] Queue called: Q250005 by POS System
+[2025-08-17 21:29:24] [INFO] [::1] [guest] Queue called: Q250812003 by POS System
+[2025-08-17 21:29:25] [INFO] [::1] [guest] Queue called: Q250812002 by POS System
+[2025-08-17 21:29:26] [INFO] [::1] [guest] Queue called: Q250730001 by POS System
+[2025-08-17 21:29:30] [INFO] [::1] [guest] Queue called: Q250005 by POS System
+[2025-08-17 21:29:37] [INFO] [::1] [guest] Queue called: Q250001 by POS System
+[2025-08-17 21:30:24] [INFO] [::1] [user_1] Error checking blocked IP: SQLSTATE[42S02]: Base table or view not found: 1146 Table 'smart_order.login_attempts' doesn't exist
+[2025-08-17 21:30:39] [INFO] [::1] [user_1] Error checking blocked IP: SQLSTATE[42S02]: Base table or view not found: 1146 Table 'smart_order.login_attempts' doesn't exist
+[2025-08-17 21:30:39] [INFO] [::1] [user_1] Error checking blocked IP: SQLSTATE[42S02]: Base table or view not found: 1146 Table 'smart_order.login_attempts' doesn't exist
+[2025-08-17 21:30:39] [INFO] [::1] [user_1] Error checking blocked IP: SQLSTATE[42S02]: Base table or view not found: 1146 Table 'smart_order.login_attempts' doesn't exist
+[2025-08-17 21:30:39] [INFO] [::1] [user_1] Error checking blocked IP: SQLSTATE[42S02]: Base table or view not found: 1146 Table 'smart_order.login_attempts' doesn't exist
+[2025-08-17 21:30:40] [INFO] [::1] [user_1] Error checking blocked IP: SQLSTATE[42S02]: Base table or view not found: 1146 Table 'smart_order.login_attempts' doesn't exist
+[2025-08-17 21:30:40] [INFO] [::1] [user_1] Error checking blocked IP: SQLSTATE[42S02]: Base table or view not found: 1146 Table 'smart_order.login_attempts' doesn't exist
+[2025-08-17 21:30:40] [INFO] [::1] [user_1] Error checking blocked IP: SQLSTATE[42S02]: Base table or view not found: 1146 Table 'smart_order.login_attempts' doesn't exist
+[2025-08-17 21:30:40] [INFO] [::1] [user_1] Error checking blocked IP: SQLSTATE[42S02]: Base table or view not found: 1146 Table 'smart_order.login_attempts' doesn't exist
+[2025-08-17 21:30:40] [INFO] [::1] [user_1] Error checking blocked IP: SQLSTATE[42S02]: Base table or view not found: 1146 Table 'smart_order.login_attempts' doesn't exist
+[2025-08-17 21:30:41] [INFO] [::1] [user_1] Error checking blocked IP: SQLSTATE[42S02]: Base table or view not found: 1146 Table 'smart_order.login_attempts' doesn't exist
+[2025-08-17 21:30:41] [INFO] [::1] [user_1] Error checking blocked IP: SQLSTATE[42S02]: Base table or view not found: 1146 Table 'smart_order.login_attempts' doesn't exist
+[2025-08-17 21:30:41] [INFO] [::1] [user_1] Error checking blocked IP: SQLSTATE[42S02]: Base table or view not found: 1146 Table 'smart_order.login_attempts' doesn't exist
+[2025-08-17 21:30:41] [INFO] [::1] [user_1] Error checking blocked IP: SQLSTATE[42S02]: Base table or view not found: 1146 Table 'smart_order.login_attempts' doesn't exist
+[2025-08-17 21:30:42] [INFO] [::1] [user_1] Error checking blocked IP: SQLSTATE[42S02]: Base table or view not found: 1146 Table 'smart_order.login_attempts' doesn't exist
+[2025-08-17 21:30:42] [INFO] [::1] [user_1] Error checking blocked IP: SQLSTATE[42S02]: Base table or view not found: 1146 Table 'smart_order.login_attempts' doesn't exist
+[2025-08-17 21:30:42] [INFO] [::1] [user_1] Error checking blocked IP: SQLSTATE[42S02]: Base table or view not found: 1146 Table 'smart_order.login_attempts' doesn't exist
+[2025-08-17 21:30:42] [INFO] [::1] [user_1] Error checking blocked IP: SQLSTATE[42S02]: Base table or view not found: 1146 Table 'smart_order.login_attempts' doesn't exist
+[2025-08-17 21:30:42] [INFO] [::1] [user_1] Error checking blocked IP: SQLSTATE[42S02]: Base table or view not found: 1146 Table 'smart_order.login_attempts' doesn't exist
+[2025-08-17 21:30:43] [INFO] [::1] [user_1] Error checking blocked IP: SQLSTATE[42S02]: Base table or view not found: 1146 Table 'smart_order.login_attempts' doesn't exist
+[2025-08-17 21:30:43] [INFO] [::1] [user_1] Error checking blocked IP: SQLSTATE[42S02]: Base table or view not found: 1146 Table 'smart_order.login_attempts' doesn't exist
+[2025-08-17 21:30:43] [INFO] [::1] [user_1] Error checking blocked IP: SQLSTATE[42S02]: Base table or view not found: 1146 Table 'smart_order.login_attempts' doesn't exist
+[2025-08-17 21:30:43] [INFO] [::1] [user_1] Error checking blocked IP: SQLSTATE[42S02]: Base table or view not found: 1146 Table 'smart_order.login_attempts' doesn't exist
+[2025-08-17 21:30:43] [INFO] [::1] [user_1] Error checking blocked IP: SQLSTATE[42S02]: Base table or view not found: 1146 Table 'smart_order.login_attempts' doesn't exist
+[2025-08-17 21:30:44] [INFO] [::1] [user_1] Error checking blocked IP: SQLSTATE[42S02]: Base table or view not found: 1146 Table 'smart_order.login_attempts' doesn't exist
+[2025-08-17 21:30:44] [INFO] [::1] [user_1] Error checking blocked IP: SQLSTATE[42S02]: Base table or view not found: 1146 Table 'smart_order.login_attempts' doesn't exist
+[2025-08-17 21:30:44] [INFO] [::1] [user_1] Error checking blocked IP: SQLSTATE[42S02]: Base table or view not found: 1146 Table 'smart_order.login_attempts' doesn't exist
+[2025-08-17 21:30:44] [INFO] [::1] [user_1] Error checking blocked IP: SQLSTATE[42S02]: Base table or view not found: 1146 Table 'smart_order.login_attempts' doesn't exist
+[2025-08-17 21:30:44] [INFO] [::1] [user_1] Error checking blocked IP: SQLSTATE[42S02]: Base table or view not found: 1146 Table 'smart_order.login_attempts' doesn't exist
+[2025-08-17 21:30:45] [INFO] [::1] [user_1] Error checking blocked IP: SQLSTATE[42S02]: Base table or view not found: 1146 Table 'smart_order.login_attempts' doesn't exist
+[2025-08-17 21:30:45] [INFO] [::1] [user_1] Error checking blocked IP: SQLSTATE[42S02]: Base table or view not found: 1146 Table 'smart_order.login_attempts' doesn't exist
+[2025-08-17 21:30:45] [INFO] [::1] [user_1] Error checking blocked IP: SQLSTATE[42S02]: Base table or view not found: 1146 Table 'smart_order.login_attempts' doesn't exist
+[2025-08-17 21:30:45] [INFO] [::1] [user_1] Error checking blocked IP: SQLSTATE[42S02]: Base table or view not found: 1146 Table 'smart_order.login_attempts' doesn't exist
+[2025-08-17 21:30:45] [INFO] [::1] [user_1] Error checking blocked IP: SQLSTATE[42S02]: Base table or view not found: 1146 Table 'smart_order.login_attempts' doesn't exist
+[2025-08-17 21:30:46] [INFO] [::1] [user_1] Error checking blocked IP: SQLSTATE[42S02]: Base table or view not found: 1146 Table 'smart_order.login_attempts' doesn't exist
+[2025-08-17 21:30:46] [INFO] [::1] [user_1] Error checking blocked IP: SQLSTATE[42S02]: Base table or view not found: 1146 Table 'smart_order.login_attempts' doesn't exist
+[2025-08-17 21:30:46] [INFO] [::1] [user_1] Error checking blocked IP: SQLSTATE[42S02]: Base table or view not found: 1146 Table 'smart_order.login_attempts' doesn't exist
+[2025-08-17 21:30:46] [INFO] [::1] [user_1] Error checking blocked IP: SQLSTATE[42S02]: Base table or view not found: 1146 Table 'smart_order.login_attempts' doesn't exist
+[2025-08-17 21:30:46] [INFO] [::1] [user_1] Error checking blocked IP: SQLSTATE[42S02]: Base table or view not found: 1146 Table 'smart_order.login_attempts' doesn't exist
+[2025-08-17 21:30:47] [INFO] [::1] [user_1] Error checking blocked IP: SQLSTATE[42S02]: Base table or view not found: 1146 Table 'smart_order.login_attempts' doesn't exist
+[2025-08-17 21:30:47] [INFO] [::1] [user_1] Error checking blocked IP: SQLSTATE[42S02]: Base table or view not found: 1146 Table 'smart_order.login_attempts' doesn't exist
+[2025-08-17 21:30:47] [INFO] [::1] [user_1] Error checking blocked IP: SQLSTATE[42S02]: Base table or view not found: 1146 Table 'smart_order.login_attempts' doesn't exist
+[2025-08-17 21:30:47] [INFO] [::1] [user_1] Error checking blocked IP: SQLSTATE[42S02]: Base table or view not found: 1146 Table 'smart_order.login_attempts' doesn't exist
+[2025-08-17 21:30:47] [INFO] [::1] [user_1] Error checking blocked IP: SQLSTATE[42S02]: Base table or view not found: 1146 Table 'smart_order.login_attempts' doesn't exist
+[2025-08-17 21:30:48] [INFO] [::1] [user_1] Error checking blocked IP: SQLSTATE[42S02]: Base table or view not found: 1146 Table 'smart_order.login_attempts' doesn't exist
+[2025-08-17 21:30:48] [INFO] [::1] [user_1] Error checking blocked IP: SQLSTATE[42S02]: Base table or view not found: 1146 Table 'smart_order.login_attempts' doesn't exist
+[2025-08-17 21:30:48] [INFO] [::1] [user_1] Error checking blocked IP: SQLSTATE[42S02]: Base table or view not found: 1146 Table 'smart_order.login_attempts' doesn't exist
+[2025-08-17 21:30:48] [INFO] [::1] [user_1] Error checking blocked IP: SQLSTATE[42S02]: Base table or view not found: 1146 Table 'smart_order.login_attempts' doesn't exist
+[2025-08-17 21:30:49] [INFO] [::1] [user_1] Error checking blocked IP: SQLSTATE[42S02]: Base table or view not found: 1146 Table 'smart_order.login_attempts' doesn't exist
+[2025-08-17 21:30:49] [INFO] [::1] [user_1] Error checking blocked IP: SQLSTATE[42S02]: Base table or view not found: 1146 Table 'smart_order.login_attempts' doesn't exist
+[2025-08-17 21:30:49] [INFO] [::1] [user_1] Error checking blocked IP: SQLSTATE[42S02]: Base table or view not found: 1146 Table 'smart_order.login_attempts' doesn't exist
+[2025-08-17 21:30:49] [INFO] [::1] [user_1] Error checking blocked IP: SQLSTATE[42S02]: Base table or view not found: 1146 Table 'smart_order.login_attempts' doesn't exist
+[2025-08-17 21:30:49] [INFO] [::1] [user_1] Error checking blocked IP: SQLSTATE[42S02]: Base table or view not found: 1146 Table 'smart_order.login_attempts' doesn't exist
+[2025-08-17 21:30:50] [INFO] [::1] [user_1] Error checking blocked IP: SQLSTATE[42S02]: Base table or view not found: 1146 Table 'smart_order.login_attempts' doesn't exist
+[2025-08-17 21:30:50] [INFO] [::1] [user_1] Error checking blocked IP: SQLSTATE[42S02]: Base table or view not found: 1146 Table 'smart_order.login_attempts' doesn't exist
+[2025-08-17 21:30:50] [INFO] [::1] [user_1] Error checking blocked IP: SQLSTATE[42S02]: Base table or view not found: 1146 Table 'smart_order.login_attempts' doesn't exist
+[2025-08-17 21:30:50] [INFO] [::1] [user_1] Error checking blocked IP: SQLSTATE[42S02]: Base table or view not found: 1146 Table 'smart_order.login_attempts' doesn't exist
+[2025-08-17 21:30:50] [INFO] [::1] [user_1] Error checking blocked IP: SQLSTATE[42S02]: Base table or view not found: 1146 Table 'smart_order.login_attempts' doesn't exist
+[2025-08-17 21:30:51] [INFO] [::1] [user_1] Error checking blocked IP: SQLSTATE[42S02]: Base table or view not found: 1146 Table 'smart_order.login_attempts' doesn't exist
+[2025-08-17 21:30:51] [INFO] [::1] [user_1] Error checking blocked IP: SQLSTATE[42S02]: Base table or view not found: 1146 Table 'smart_order.login_attempts' doesn't exist
+[2025-08-17 21:30:51] [INFO] [::1] [user_1] Error checking blocked IP: SQLSTATE[42S02]: Base table or view not found: 1146 Table 'smart_order.login_attempts' doesn't exist
+[2025-08-17 21:30:51] [INFO] [::1] [user_1] Error checking blocked IP: SQLSTATE[42S02]: Base table or view not found: 1146 Table 'smart_order.login_attempts' doesn't exist
+[2025-08-17 21:30:51] [INFO] [::1] [user_1] Error checking blocked IP: SQLSTATE[42S02]: Base table or view not found: 1146 Table 'smart_order.login_attempts' doesn't exist
+[2025-08-17 21:30:52] [INFO] [::1] [user_1] Error checking blocked IP: SQLSTATE[42S02]: Base table or view not found: 1146 Table 'smart_order.login_attempts' doesn't exist
+[2025-08-17 21:30:52] [INFO] [::1] [user_1] Error checking blocked IP: SQLSTATE[42S02]: Base table or view not found: 1146 Table 'smart_order.login_attempts' doesn't exist
+[2025-08-17 21:30:52] [INFO] [::1] [user_1] Error checking blocked IP: SQLSTATE[42S02]: Base table or view not found: 1146 Table 'smart_order.login_attempts' doesn't exist
+[2025-08-17 21:30:52] [INFO] [::1] [user_1] Error checking blocked IP: SQLSTATE[42S02]: Base table or view not found: 1146 Table 'smart_order.login_attempts' doesn't exist
+[2025-08-17 21:30:52] [INFO] [::1] [user_1] Error checking blocked IP: SQLSTATE[42S02]: Base table or view not found: 1146 Table 'smart_order.login_attempts' doesn't exist
+[2025-08-17 21:30:53] [INFO] [::1] [user_1] Error checking blocked IP: SQLSTATE[42S02]: Base table or view not found: 1146 Table 'smart_order.login_attempts' doesn't exist
+[2025-08-17 21:30:53] [INFO] [::1] [user_1] Error checking blocked IP: SQLSTATE[42S02]: Base table or view not found: 1146 Table 'smart_order.login_attempts' doesn't exist
+[2025-08-17 21:30:53] [INFO] [::1] [user_1] Error checking blocked IP: SQLSTATE[42S02]: Base table or view not found: 1146 Table 'smart_order.login_attempts' doesn't exist
+[2025-08-17 21:30:53] [INFO] [::1] [user_1] Error checking blocked IP: SQLSTATE[42S02]: Base table or view not found: 1146 Table 'smart_order.login_attempts' doesn't exist
+[2025-08-17 21:30:53] [INFO] [::1] [user_1] Error checking blocked IP: SQLSTATE[42S02]: Base table or view not found: 1146 Table 'smart_order.login_attempts' doesn't exist
+[2025-08-17 21:30:54] [INFO] [::1] [user_1] Error checking blocked IP: SQLSTATE[42S02]: Base table or view not found: 1146 Table 'smart_order.login_attempts' doesn't exist
+[2025-08-17 21:30:54] [INFO] [::1] [user_1] Error checking blocked IP: SQLSTATE[42S02]: Base table or view not found: 1146 Table 'smart_order.login_attempts' doesn't exist
+[2025-08-17 21:30:54] [INFO] [::1] [user_1] Error checking blocked IP: SQLSTATE[42S02]: Base table or view not found: 1146 Table 'smart_order.login_attempts' doesn't exist
+[2025-08-17 21:30:54] [INFO] [::1] [user_1] Error checking blocked IP: SQLSTATE[42S02]: Base table or view not found: 1146 Table 'smart_order.login_attempts' doesn't exist
+[2025-08-17 21:30:54] [INFO] [::1] [user_1] Error checking blocked IP: SQLSTATE[42S02]: Base table or view not found: 1146 Table 'smart_order.login_attempts' doesn't exist
+[2025-08-17 21:30:55] [INFO] [::1] [user_1] Error checking blocked IP: SQLSTATE[42S02]: Base table or view not found: 1146 Table 'smart_order.login_attempts' doesn't exist
+[2025-08-17 21:30:55] [INFO] [::1] [user_1] Error checking blocked IP: SQLSTATE[42S02]: Base table or view not found: 1146 Table 'smart_order.login_attempts' doesn't exist
+[2025-08-17 21:30:55] [INFO] [::1] [user_1] Error checking blocked IP: SQLSTATE[42S02]: Base table or view not found: 1146 Table 'smart_order.login_attempts' doesn't exist
+[2025-08-17 21:30:55] [INFO] [::1] [user_1] Error checking blocked IP: SQLSTATE[42S02]: Base table or view not found: 1146 Table 'smart_order.login_attempts' doesn't exist
+[2025-08-17 21:30:55] [INFO] [::1] [user_1] Error checking blocked IP: SQLSTATE[42S02]: Base table or view not found: 1146 Table 'smart_order.login_attempts' doesn't exist
+[2025-08-17 21:30:56] [INFO] [::1] [user_1] Error checking blocked IP: SQLSTATE[42S02]: Base table or view not found: 1146 Table 'smart_order.login_attempts' doesn't exist
+[2025-08-17 21:30:56] [INFO] [::1] [user_1] Error checking blocked IP: SQLSTATE[42S02]: Base table or view not found: 1146 Table 'smart_order.login_attempts' doesn't exist
+[2025-08-17 21:30:56] [INFO] [::1] [user_1] Error checking blocked IP: SQLSTATE[42S02]: Base table or view not found: 1146 Table 'smart_order.login_attempts' doesn't exist
+[2025-08-17 21:30:56] [INFO] [::1] [user_1] Error checking blocked IP: SQLSTATE[42S02]: Base table or view not found: 1146 Table 'smart_order.login_attempts' doesn't exist
+[2025-08-17 21:30:57] [INFO] [::1] [user_1] Error checking blocked IP: SQLSTATE[42S02]: Base table or view not found: 1146 Table 'smart_order.login_attempts' doesn't exist
+[2025-08-17 21:30:57] [INFO] [::1] [user_1] Error checking blocked IP: SQLSTATE[42S02]: Base table or view not found: 1146 Table 'smart_order.login_attempts' doesn't exist
+[2025-08-17 21:30:57] [INFO] [::1] [user_1] Error checking blocked IP: SQLSTATE[42S02]: Base table or view not found: 1146 Table 'smart_order.login_attempts' doesn't exist
+[2025-08-17 21:30:57] [INFO] [::1] [user_1] Error checking blocked IP: SQLSTATE[42S02]: Base table or view not found: 1146 Table 'smart_order.login_attempts' doesn't exist
+[2025-08-17 21:30:57] [INFO] [::1] [user_1] Error checking blocked IP: SQLSTATE[42S02]: Base table or view not found: 1146 Table 'smart_order.login_attempts' doesn't exist
+[2025-08-17 21:30:58] [INFO] [::1] [user_1] Error checking blocked IP: SQLSTATE[42S02]: Base table or view not found: 1146 Table 'smart_order.login_attempts' doesn't exist
+[2025-08-17 21:30:58] [INFO] [::1] [user_1] Error checking blocked IP: SQLSTATE[42S02]: Base table or view not found: 1146 Table 'smart_order.login_attempts' doesn't exist
+[2025-08-17 21:30:58] [INFO] [::1] [user_1] Error checking blocked IP: SQLSTATE[42S02]: Base table or view not found: 1146 Table 'smart_order.login_attempts' doesn't exist
+[2025-08-17 21:30:58] [INFO] [::1] [user_1] Error checking blocked IP: SQLSTATE[42S02]: Base table or view not found: 1146 Table 'smart_order.login_attempts' doesn't exist
+[2025-08-17 21:30:58] [INFO] [::1] [user_1] Error checking blocked IP: SQLSTATE[42S02]: Base table or view not found: 1146 Table 'smart_order.login_attempts' doesn't exist
+[2025-08-17 21:30:59] [INFO] [::1] [user_1] Error checking blocked IP: SQLSTATE[42S02]: Base table or view not found: 1146 Table 'smart_order.login_attempts' doesn't exist
+[2025-08-17 21:30:59] [INFO] [::1] [user_1] Error checking blocked IP: SQLSTATE[42S02]: Base table or view not found: 1146 Table 'smart_order.login_attempts' doesn't exist
+[2025-08-17 21:30:59] [INFO] [::1] [user_1] Error checking blocked IP: SQLSTATE[42S02]: Base table or view not found: 1146 Table 'smart_order.login_attempts' doesn't exist
+[2025-08-17 21:30:59] [INFO] [::1] [user_1] Error checking blocked IP: SQLSTATE[42S02]: Base table or view not found: 1146 Table 'smart_order.login_attempts' doesn't exist
+[2025-08-17 21:30:59] [INFO] [::1] [user_1] Error checking blocked IP: SQLSTATE[42S02]: Base table or view not found: 1146 Table 'smart_order.login_attempts' doesn't exist
+[2025-08-17 21:31:00] [INFO] [::1] [user_1] Error checking blocked IP: SQLSTATE[42S02]: Base table or view not found: 1146 Table 'smart_order.login_attempts' doesn't exist
+[2025-08-17 21:31:00] [INFO] [::1] [user_1] Error checking blocked IP: SQLSTATE[42S02]: Base table or view not found: 1146 Table 'smart_order.login_attempts' doesn't exist
+[2025-08-17 21:31:00] [INFO] [::1] [user_1] Error checking blocked IP: SQLSTATE[42S02]: Base table or view not found: 1146 Table 'smart_order.login_attempts' doesn't exist
+[2025-08-17 21:31:00] [INFO] [::1] [user_1] Error checking blocked IP: SQLSTATE[42S02]: Base table or view not found: 1146 Table 'smart_order.login_attempts' doesn't exist
+[2025-08-17 21:31:00] [INFO] [::1] [user_1] Error checking blocked IP: SQLSTATE[42S02]: Base table or view not found: 1146 Table 'smart_order.login_attempts' doesn't exist
+[2025-08-17 21:31:01] [INFO] [::1] [user_1] Error checking blocked IP: SQLSTATE[42S02]: Base table or view not found: 1146 Table 'smart_order.login_attempts' doesn't exist
+[2025-08-17 21:31:01] [INFO] [::1] [user_1] Error checking blocked IP: SQLSTATE[42S02]: Base table or view not found: 1146 Table 'smart_order.login_attempts' doesn't exist
+[2025-08-17 21:31:01] [INFO] [::1] [user_1] Error checking blocked IP: SQLSTATE[42S02]: Base table or view not found: 1146 Table 'smart_order.login_attempts' doesn't exist
+[2025-08-17 21:31:01] [INFO] [::1] [user_1] Error checking blocked IP: SQLSTATE[42S02]: Base table or view not found: 1146 Table 'smart_order.login_attempts' doesn't exist
+[2025-08-17 21:31:01] [INFO] [::1] [user_1] Error checking blocked IP: SQLSTATE[42S02]: Base table or view not found: 1146 Table 'smart_order.login_attempts' doesn't exist
+[2025-08-17 21:31:02] [INFO] [::1] [user_1] Error checking blocked IP: SQLSTATE[42S02]: Base table or view not found: 1146 Table 'smart_order.login_attempts' doesn't exist
+[2025-08-17 21:31:02] [INFO] [::1] [user_1] Error checking blocked IP: SQLSTATE[42S02]: Base table or view not found: 1146 Table 'smart_order.login_attempts' doesn't exist
+[2025-08-17 21:31:02] [INFO] [::1] [user_1] Error checking blocked IP: SQLSTATE[42S02]: Base table or view not found: 1146 Table 'smart_order.login_attempts' doesn't exist
+[2025-08-17 21:31:02] [INFO] [::1] [user_1] Error checking blocked IP: SQLSTATE[42S02]: Base table or view not found: 1146 Table 'smart_order.login_attempts' doesn't exist
+[2025-08-17 21:31:03] [INFO] [::1] [user_1] Error checking blocked IP: SQLSTATE[42S02]: Base table or view not found: 1146 Table 'smart_order.login_attempts' doesn't exist
+[2025-08-17 21:31:03] [INFO] [::1] [user_1] Error checking blocked IP: SQLSTATE[42S02]: Base table or view not found: 1146 Table 'smart_order.login_attempts' doesn't exist
+[2025-08-17 21:31:03] [INFO] [::1] [user_1] Error checking blocked IP: SQLSTATE[42S02]: Base table or view not found: 1146 Table 'smart_order.login_attempts' doesn't exist
+[2025-08-17 21:31:03] [INFO] [::1] [user_1] Error checking blocked IP: SQLSTATE[42S02]: Base table or view not found: 1146 Table 'smart_order.login_attempts' doesn't exist
+[2025-08-17 21:31:03] [INFO] [::1] [user_1] Error checking blocked IP: SQLSTATE[42S02]: Base table or view not found: 1146 Table 'smart_order.login_attempts' doesn't exist
+[2025-08-17 21:31:04] [INFO] [::1] [user_1] Error checking blocked IP: SQLSTATE[42S02]: Base table or view not found: 1146 Table 'smart_order.login_attempts' doesn't exist
+[2025-08-17 21:31:04] [INFO] [::1] [user_1] Error checking blocked IP: SQLSTATE[42S02]: Base table or view not found: 1146 Table 'smart_order.login_attempts' doesn't exist
+[2025-08-17 21:31:04] [INFO] [::1] [user_1] Error checking blocked IP: SQLSTATE[42S02]: Base table or view not found: 1146 Table 'smart_order.login_attempts' doesn't exist
+[2025-08-17 21:31:04] [INFO] [::1] [user_1] Error checking blocked IP: SQLSTATE[42S02]: Base table or view not found: 1146 Table 'smart_order.login_attempts' doesn't exist
+[2025-08-17 21:31:04] [INFO] [::1] [user_1] Error checking blocked IP: SQLSTATE[42S02]: Base table or view not found: 1146 Table 'smart_order.login_attempts' doesn't exist
+[2025-08-17 21:31:05] [INFO] [::1] [user_1] Error checking blocked IP: SQLSTATE[42S02]: Base table or view not found: 1146 Table 'smart_order.login_attempts' doesn't exist
+[2025-08-17 21:31:05] [INFO] [::1] [user_1] Error checking blocked IP: SQLSTATE[42S02]: Base table or view not found: 1146 Table 'smart_order.login_attempts' doesn't exist
+[2025-08-17 21:31:05] [INFO] [::1] [user_1] Error checking blocked IP: SQLSTATE[42S02]: Base table or view not found: 1146 Table 'smart_order.login_attempts' doesn't exist
+[2025-08-17 21:31:05] [INFO] [::1] [user_1] Error checking blocked IP: SQLSTATE[42S02]: Base table or view not found: 1146 Table 'smart_order.login_attempts' doesn't exist
+[2025-08-17 21:31:05] [INFO] [::1] [user_1] Error checking blocked IP: SQLSTATE[42S02]: Base table or view not found: 1146 Table 'smart_order.login_attempts' doesn't exist
+[2025-08-17 21:31:06] [INFO] [::1] [user_1] Error checking blocked IP: SQLSTATE[42S02]: Base table or view not found: 1146 Table 'smart_order.login_attempts' doesn't exist
+[2025-08-17 21:31:06] [INFO] [::1] [user_1] Error checking blocked IP: SQLSTATE[42S02]: Base table or view not found: 1146 Table 'smart_order.login_attempts' doesn't exist
+[2025-08-17 21:31:06] [INFO] [::1] [user_1] Error checking blocked IP: SQLSTATE[42S02]: Base table or view not found: 1146 Table 'smart_order.login_attempts' doesn't exist
+[2025-08-17 21:31:06] [INFO] [::1] [user_1] Error checking blocked IP: SQLSTATE[42S02]: Base table or view not found: 1146 Table 'smart_order.login_attempts' doesn't exist
+[2025-08-17 21:31:24] [INFO] [::1] [guest] Queue called: Q250001 by POS System
+[2025-08-17 21:31:27] [INFO] [::1] [guest] Queue called: Q250003 by POS System
+[2025-08-17 21:31:49] [INFO] [::1] [guest] Queue called: Q2507001 by POS System
+[2025-08-17 21:32:24] [INFO] [::1] [guest] Queue called: Q250812002 by POS System
+[2025-08-17 21:32:27] [INFO] [::1] [guest] Queue called: Q250001 by POS System
+[2025-08-17 21:32:28] [INFO] [::1] [guest] Queue called: Q250003 by POS System
+[2025-08-17 21:32:35] [INFO] [::1] [guest] Queue called: Q250005 by POS System
+[2025-08-17 21:32:37] [INFO] [::1] [guest] Queue called: Q250812002 by POS System
+[2025-08-17 21:32:58] [INFO] [::1] [guest] Queue called: Q250003 by POS System
+[2025-08-17 21:36:19] [INFO] [::1] [user_1] Order created successfully: Order ID 34, Number ORD202508172924, Amount 60
+[2025-08-17 21:38:39] [INFO] [::1] [guest] Voice queue error: Invalid parameters
+[2025-08-17 21:38:45] [INFO] [::1] [guest] Voice queue error: Invalid parameters
+[2025-08-17 21:38:52] [INFO] [::1] [guest] Voice queue error: Invalid parameters
+[2025-08-17 21:38:57] [INFO] [::1] [guest] Voice queue error: Invalid parameters
+[2025-08-17 21:39:04] [INFO] [::1] [guest] Voice queue error: Invalid parameters
+[2025-08-17 21:39:15] [INFO] [::1] [guest] Voice queue error: Invalid parameters
+[2025-08-17 21:39:35] [INFO] [::1] [guest] Voice queue error: Invalid parameters
+[2025-08-17 21:40:53] [INFO] [::1] [user_1] Error checking blocked IP: SQLSTATE[42S02]: Base table or view not found: 1146 Table 'smart_order.login_attempts' doesn't exist
+[2025-08-17 21:41:07] [INFO] [::1] [guest] User logout: admin (ID: 1)
+[2025-08-17 21:41:08] [INFO] [::1] [guest] Error checking blocked IP: SQLSTATE[42S02]: Base table or view not found: 1146 Table 'smart_order.login_attempts' doesn't exist
+[2025-08-17 21:41:16] [INFO] [::1] [user_1] User login: admin (ID: 1)
+[2025-08-17 21:41:16] [INFO] [::1] [user_1] Error checking blocked IP: SQLSTATE[42S02]: Base table or view not found: 1146 Table 'smart_order.login_attempts' doesn't exist
+[2025-08-17 21:41:16] [INFO] [::1] [user_1] Error checking blocked IP: SQLSTATE[42S02]: Base table or view not found: 1146 Table 'smart_order.login_attempts' doesn't exist
+[2025-08-17 21:41:16] [INFO] [::1] [user_1] Error checking blocked IP: SQLSTATE[42S02]: Base table or view not found: 1146 Table 'smart_order.login_attempts' doesn't exist
+[2025-08-17 21:41:16] [INFO] [::1] [user_1] Error checking blocked IP: SQLSTATE[42S02]: Base table or view not found: 1146 Table 'smart_order.login_attempts' doesn't exist
+[2025-08-17 21:41:17] [INFO] [::1] [user_1] Error checking blocked IP: SQLSTATE[42S02]: Base table or view not found: 1146 Table 'smart_order.login_attempts' doesn't exist
+[2025-08-17 21:41:17] [INFO] [::1] [user_1] Error checking blocked IP: SQLSTATE[42S02]: Base table or view not found: 1146 Table 'smart_order.login_attempts' doesn't exist
+[2025-08-17 21:41:17] [INFO] [::1] [user_1] Error checking blocked IP: SQLSTATE[42S02]: Base table or view not found: 1146 Table 'smart_order.login_attempts' doesn't exist
+[2025-08-17 21:41:17] [INFO] [::1] [user_1] Error checking blocked IP: SQLSTATE[42S02]: Base table or view not found: 1146 Table 'smart_order.login_attempts' doesn't exist
+[2025-08-17 21:41:18] [INFO] [::1] [user_1] Error checking blocked IP: SQLSTATE[42S02]: Base table or view not found: 1146 Table 'smart_order.login_attempts' doesn't exist
+[2025-08-17 21:41:18] [INFO] [::1] [user_1] Error checking blocked IP: SQLSTATE[42S02]: Base table or view not found: 1146 Table 'smart_order.login_attempts' doesn't exist
+[2025-08-17 21:41:18] [INFO] [::1] [user_1] Error checking blocked IP: SQLSTATE[42S02]: Base table or view not found: 1146 Table 'smart_order.login_attempts' doesn't exist
+[2025-08-17 21:41:18] [INFO] [::1] [user_1] Error checking blocked IP: SQLSTATE[42S02]: Base table or view not found: 1146 Table 'smart_order.login_attempts' doesn't exist
+[2025-08-17 21:41:18] [INFO] [::1] [user_1] Error checking blocked IP: SQLSTATE[42S02]: Base table or view not found: 1146 Table 'smart_order.login_attempts' doesn't exist
+[2025-08-17 21:41:19] [INFO] [::1] [user_1] Error checking blocked IP: SQLSTATE[42S02]: Base table or view not found: 1146 Table 'smart_order.login_attempts' doesn't exist
+[2025-08-17 21:41:19] [INFO] [::1] [user_1] Error checking blocked IP: SQLSTATE[42S02]: Base table or view not found: 1146 Table 'smart_order.login_attempts' doesn't exist
+[2025-08-17 21:41:19] [INFO] [::1] [user_1] Error checking blocked IP: SQLSTATE[42S02]: Base table or view not found: 1146 Table 'smart_order.login_attempts' doesn't exist
+[2025-08-17 21:41:19] [INFO] [::1] [user_1] Error checking blocked IP: SQLSTATE[42S02]: Base table or view not found: 1146 Table 'smart_order.login_attempts' doesn't exist
+[2025-08-17 21:41:19] [INFO] [::1] [user_1] Error checking blocked IP: SQLSTATE[42S02]: Base table or view not found: 1146 Table 'smart_order.login_attempts' doesn't exist
+[2025-08-17 21:41:20] [INFO] [::1] [user_1] Error checking blocked IP: SQLSTATE[42S02]: Base table or view not found: 1146 Table 'smart_order.login_attempts' doesn't exist
+[2025-08-17 21:41:20] [INFO] [::1] [user_1] Error checking blocked IP: SQLSTATE[42S02]: Base table or view not found: 1146 Table 'smart_order.login_attempts' doesn't exist
+[2025-08-17 21:41:20] [INFO] [::1] [user_1] Error checking blocked IP: SQLSTATE[42S02]: Base table or view not found: 1146 Table 'smart_order.login_attempts' doesn't exist
+[2025-08-17 21:41:20] [INFO] [::1] [user_1] Error checking blocked IP: SQLSTATE[42S02]: Base table or view not found: 1146 Table 'smart_order.login_attempts' doesn't exist
+[2025-08-17 21:41:20] [INFO] [::1] [user_1] Error checking blocked IP: SQLSTATE[42S02]: Base table or view not found: 1146 Table 'smart_order.login_attempts' doesn't exist
+[2025-08-17 21:41:21] [INFO] [::1] [user_1] Error checking blocked IP: SQLSTATE[42S02]: Base table or view not found: 1146 Table 'smart_order.login_attempts' doesn't exist
+[2025-08-17 21:41:21] [INFO] [::1] [user_1] Error checking blocked IP: SQLSTATE[42S02]: Base table or view not found: 1146 Table 'smart_order.login_attempts' doesn't exist
+[2025-08-17 21:41:38] [INFO] [::1] [guest] Voice queue error: Invalid parameters
+[2025-08-17 21:41:51] [INFO] [::1] [guest] Voice queue error: Invalid parameters
+[2025-08-17 21:42:05] [INFO] [::1] [guest] Voice queue error: Invalid parameters
+[2025-08-17 21:42:07] [INFO] [::1] [guest] Voice queue error: Invalid parameters
+[2025-08-17 21:42:09] [INFO] [::1] [guest] Voice queue error: Invalid parameters
+[2025-08-17 21:42:59] [INFO] [::1] [guest] Get new queues error: SQLSTATE[42S22]: Column not found: 1054 Unknown column 'o.created_at' in 'where clause'
+[2025-08-17 21:43:26] [INFO] [::1] [guest] Voice queue error: Invalid parameters
+[2025-08-17 21:43:35] [INFO] [::1] [guest] Queue called: Q250729001 by POS System
+[2025-08-17 21:43:38] [INFO] [::1] [guest] Update queue status error: SQLSTATE[42S02]: Base table or view not found: 1146 Table 'smart_order.order_status_logs' doesn't exist
+[2025-08-17 21:43:54] [INFO] [::1] [guest] Voice queue error: Invalid parameters
+[2025-08-17 21:43:54] [INFO] [::1] [guest] Update queue status error: SQLSTATE[42S22]: Column not found: 1054 Unknown column 'old_status' in 'field list'
+[2025-08-17 21:44:02] [INFO] [::1] [guest] Voice queue error: Invalid parameters
+[2025-08-17 21:44:12] [INFO] [::1] [guest] Voice queue error: Invalid parameters
+[2025-08-17 21:44:19] [INFO] [::1] [guest] Order status updated: Q250729001 from ready to preparing by 
+[2025-08-17 21:44:26] [INFO] [::1] [guest] Get new queues error: SQLSTATE[42S22]: Column not found: 1054 Unknown column 'o.created_at' in 'where clause'
+[2025-08-17 21:44:27] [INFO] [::1] [guest] Order status updated: Q250729001 from preparing to ready by 
+[2025-08-17 21:45:05] [INFO] [::1] [guest] Queue called: Q250003 by POS System
+[2025-08-17 21:45:14] [INFO] [::1] [guest] Voice queue error: Invalid parameters
+[2025-08-17 21:45:29] [INFO] [::1] [guest] Queue called: Q250817001 by POS System
+[2025-08-17 21:45:38] [INFO] [::1] [guest] Queue called: Q250817001 by POS System
+[2025-08-17 21:45:55] [INFO] [::1] [guest] Voice queue error: Invalid parameters
+[2025-08-17 21:46:06] [INFO] [::1] [guest] Voice queue error: Invalid parameters
+[2025-08-17 21:46:14] [INFO] [::1] [guest] Voice queue error: Invalid parameters
+[2025-08-17 21:47:23] [INFO] [::1] [guest] Queue called: Q250003 by POS System
+[2025-08-17 21:47:30] [INFO] [::1] [guest] Voice queue error: Invalid parameters
+[2025-08-17 21:47:34] [INFO] [::1] [guest] Queue called: Q250003 by POS System
+[2025-08-17 21:48:07] [INFO] [::1] [guest] Queue called: Q250003 by POS System
+[2025-08-17 21:49:57] [INFO] [::1] [guest] Voice queue error: Invalid parameters
+[2025-08-17 21:49:59] [INFO] [::1] [guest] Voice queue error: Invalid parameters
+[2025-08-17 21:50:05] [INFO] [::1] [guest] Voice queue error: Invalid parameters
+[2025-08-17 21:53:38] [INFO] [::1] [guest] Queue called: Q250003 by POS System
+[2025-08-17 21:55:53] [INFO] [::1] [guest] Voice queue error: Invalid parameters
+[2025-08-17 21:55:59] [INFO] [::1] [guest] Voice queue error: Invalid parameters
+[2025-08-17 21:57:54] [INFO] [::1] [guest] Queue called: Q250003 by POS System
+[2025-08-17 21:57:56] [INFO] [::1] [guest] Queue called: Q250001 by POS System
+[2025-08-17 22:15:11] [INFO] [::1] [guest] Queue called: Q250001 by POS System
+[2025-08-17 22:15:12] [INFO] [::1] [guest] Queue called: Q250001 by POS System
+[2025-08-17 22:15:15] [INFO] [::1] [guest] Queue called: Q250003 by POS System
+[2025-08-17 22:15:16] [INFO] [::1] [guest] Queue called: Q250003 by POS System
+[2025-08-17 22:15:16] [INFO] [::1] [guest] Queue called: Q250003 by POS System
+[2025-08-17 22:15:18] [INFO] [::1] [guest] Queue called: Q250001 by POS System
+[2025-08-17 22:33:17] [INFO] [::1] [guest] Queue called: Q250817002 by POS System
+[2025-08-17 22:33:22] [INFO] [::1] [guest] Queue called: Q250817002 by POS System
+[2025-08-17 22:33:28] [INFO] [::1] [guest] Queue called: Q250817002 by POS System
+[2025-08-17 23:12:51] [INFO] [::1] [guest] User logout: admin (ID: 1)

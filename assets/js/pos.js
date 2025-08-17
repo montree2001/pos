@@ -28,7 +28,7 @@ class POSSystem {
     // โหลดสินค้าจากฐานข้อมูล
     async loadProducts() {
         try {
-            const response = await fetch('api/get_products.php');
+            const response = await fetch('/pos/api/get_products.php');
             const data = await response.json();
             
             if (data.success) {
@@ -352,7 +352,7 @@ class POSSystem {
         };
         
         try {
-            const response = await fetch('api/create_order.php', {
+            const response = await fetch('/pos/api/create_order.php', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -499,7 +499,7 @@ class POSSystem {
         if (!this.currentOrder) return;
         
         try {
-            const response = await fetch('api/send_receipt_line.php', {
+            const response = await fetch('/pos/api/send_receipt_line.php', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -651,7 +651,7 @@ class POSSystem {
     // โหลดการตั้งค่า
     async loadSettings() {
         try {
-            const response = await fetch('api/get_settings.php');
+            const response = await fetch('/pos/api/get_settings.php');
             const data = await response.json();
             
             if (data.success) {

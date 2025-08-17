@@ -5,11 +5,11 @@
  */
 
 define('SYSTEM_INIT', true);
-require_once '../config/config.php';
-require_once '../config/database.php';
-require_once '../config/session.php';
-require_once '../includes/functions.php';
-require_once '../includes/auth.php';
+require_once dirname(__DIR__) . '/config/config.php';
+require_once dirname(__DIR__) . '/config/database.php';
+require_once dirname(__DIR__) . '/config/session.php';
+require_once dirname(__DIR__) . '/includes/functions.php';
+require_once dirname(__DIR__) . '/includes/auth.php';
 
 // ตรวจสอบสิทธิ์
 if (!isLoggedIn() || !in_array(getCurrentUserRole(), ['admin', 'staff'])) {
