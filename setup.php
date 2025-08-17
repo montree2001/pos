@@ -181,7 +181,7 @@ class Database {
 
     // อัปเดตไฟล์ config.php ด้วย
     $configMainContent = str_replace(
-        "define('SITE_URL', 'http://localhost/pos');",
+        "define('SITE_URL', '');",
         "define('SITE_URL', '$siteUrl');",
         file_get_contents('config/config.php')
     );
@@ -200,7 +200,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $username = $_POST['db_username'] ?? '';
             $password = $_POST['db_password'] ?? '';
             $dbname = $_POST['db_name'] ?? 'smart_order';
-            $siteUrl = $_POST['site_url'] ?? 'http://localhost/pos';
+            $siteUrl = $_POST['site_url'] ?? '';
             
             if (empty($username)) {
                 $errors[] = 'กรุณากรอกชื่อผู้ใช้ฐานข้อมูล';

@@ -276,3 +276,7 @@
 [2025-08-17 22:33:22] [INFO] [::1] [guest] Queue called: Q250817002 by POS System
 [2025-08-17 22:33:28] [INFO] [::1] [guest] Queue called: Q250817002 by POS System
 [2025-08-17 23:12:51] [INFO] [::1] [guest] User logout: admin (ID: 1)
+[2025-08-17 23:35:00] [INFO] [::1] [user_1] User login: admin (ID: 1)
+[2025-08-17 23:57:25] [INFO] [::1] [guest] Queue called: Q250001 by POS System
+[2025-08-17 23:57:27] [INFO] [::1] [guest] Queue called: Q250003 by POS System
+[2025-08-17 23:57:34] [INFO] [::1] [guest] Queue called: Q250817001 by POS System
