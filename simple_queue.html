@@ -1,0 +1,610 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>เรียกคิว - ทำงานได้แน่นอน</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background: #2c3e50;
+            color: white;
+            text-align: center;
+            padding: 50px;
+            min-height: 100vh;
+            margin: 0;
+        }
+        
+        .container {
+            background: white;
+            color: black;
+            padding: 40px;
+            border-radius: 15px;
+            max-width: 600px;
+            margin: 0 auto;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+        }
+        
+        h1 {
+            color: #e74c3c;
+            margin-bottom: 30px;
+        }
+        
+        .queue-display {
+            font-size: 4rem;
+            font-weight: bold;
+            color: #3498db;
+            margin: 20px 0;
+            min-height: 80px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        input {
+            font-size: 2rem;
+            padding: 15px;
+            border: 2px solid #3498db;
+            border-radius: 10px;
+            text-align: center;
+            width: 200px;
+            margin: 20px;
+        }
+        
+        button {
+            font-size: 1.5rem;
+            padding: 15px 30px;
+            background: #27ae60;
+            color: white;
+            border: none;
+            border-radius: 10px;
+            cursor: pointer;
+            margin: 10px;
+            transition: all 0.3s;
+        }
+        
+        button:hover {
+            background: #2ecc71;
+            transform: translateY(-2px);
+        }
+        
+        button:disabled {
+            background: #95a5a6;
+            cursor: not-allowed;
+            transform: none;
+        }
+        
+        .status {
+            margin: 20px 0;
+            padding: 15px;
+            border-radius: 10px;
+            font-weight: bold;
+            min-height: 20px;
+        }
+        
+        .success { background: #d5f4e6; color: #27ae60; }
+        .error { background: #fadbd8; color: #e74c3c; }
+        .info { background: #d6eaf8; color: #3498db; }
+        .warning { background: #fcf3cf; color: #f39c12; }
+        
+        .controls {
+            background: #ecf0f1;
+            padding: 20px;
+            border-radius: 10px;
+            margin: 20px 0;
+        }
+        
+        .volume-control {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            margin: 15px 0;
+        }
+        
+        .volume-control input[type="range"] {
+            width: 200px;
+            margin: 0 10px;
+        }
+        
+        .debug {
+            background: #34495e;
+            color: white;
+            padding: 15px;
+            border-radius: 10px;
+            margin: 20px 0;
+            text-align: left;
+            font-family: monospace;
+            font-size: 12px;
+            max-height: 200px;
+            overflow-y: auto;
+        }
+        
+        .voice-list {
+            max-height: 150px;
+            overflow-y: auto;
+            text-align: left;
+            font-size: 12px;
+            background: #f8f9fa;
+            padding: 10px;
+            border-radius: 5px;
+            margin: 10px 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🔊 ระบบเรียกคิว</h1>
+        
+        <div class="queue-display" id="queueDisplay">-</div>
+        
+        <div>
+            <input type="number" id="queueInput" placeholder="หมายเลขคิว" min="1" max="999" value="1">
+        </div>
+        
+        <div>
+            <button onclick="callQueue()">🎯 เรียกคิว</button>
+            <button onclick="testBeep()">🔔 ทดสอบ Beep</button>
+            <button onclick="testVoice()">🗣️ ทดสอบเสียง</button>
+            <button onclick="stopAll()">⏹️ หยุด</button>
+        </div>
+        
+        <div id="status" class="status"></div>
+        
+        <div class="controls">
+            <h3>การตั้งค่า</h3>
+            
+            <div class="volume-control">
+                <span>🔇</span>
+                <input type="range" id="volumeSlider" min="0" max="100" value="80" onchange="updateVolume()">
+                <span>🔊</span>
+                <span id="volumeDisplay">80%</span>
+            </div>
+            
+            <div>
+                <label>
+                    <input type="checkbox" id="enableBeep" checked onchange="toggleBeep()"> เสียงแจ้งเตือน
+                </label>
+                <label style="margin-left: 20px;">
+                    <input type="checkbox" id="enableVoice" checked onchange="toggleVoice()"> เสียงประกาศ
+                </label>
+            </div>
+            
+            <div style="margin-top: 15px;">
+                <button onclick="initAudio()">🎵 เปิดระบบเสียง</button>
+                <button onclick="checkBrowser()">🔍 ตรวจสอบเบราว์เซอร์</button>
+                <button onclick="listVoices()">📝 แสดงเสียงทั้งหมด</button>
+            </div>
+        </div>
+        
+        <div id="voiceList" class="voice-list" style="display: none;"></div>
+        
+        <div id="debug" class="debug"></div>
+    </div>
+
+    <script>
+        // Global variables
+        let audioContext = null;
+        let speechSynthesis = window.speechSynthesis;
+        let selectedVoice = null;
+        let volume = 0.8;
+        let enableBeep = true;
+        let enableVoice = true;
+        let isPlaying = false;
+        let debugMessages = [];
+
+        // Initialize
+        document.addEventListener('DOMContentLoaded', function() {
+            log('🚀 เริ่มต้นระบบ...');
+            checkBrowser();
+            setTimeout(initAudio, 500);
+            setTimeout(loadVoices, 1000);
+        });
+
+        function log(message) {
+            const now = new Date().toLocaleTimeString();
+            debugMessages.push(`[${now}] ${message}`);
+            if (debugMessages.length > 20) {
+                debugMessages = debugMessages.slice(-20);
+            }
+            
+            const debugEl = document.getElementById('debug');
+            debugEl.innerHTML = debugMessages.join('\n');
+            debugEl.scrollTop = debugEl.scrollHeight;
+            
+            console.log(message);
+        }
+
+        function showStatus(message, type = 'info') {
+            const statusEl = document.getElementById('status');
+            statusEl.textContent = message;
+            statusEl.className = `status ${type}`;
+            log(`📢 Status: ${message}`);
+        }
+
+        function checkBrowser() {
+            log('🔍 ตรวจสอบเบราว์เซอร์...');
+            
+            // Check Speech Synthesis
+            if ('speechSynthesis' in window) {
+                log('✅ Speech Synthesis รองรับ');
+                showStatus('เบราว์เซอร์รองรับการพูด', 'success');
+            } else {
+                log('❌ Speech Synthesis ไม่รองรับ');
+                showStatus('เบราว์เซอร์ไม่รองรับการพูด', 'error');
+            }
+            
+            // Check Web Audio API
+            try {
+                const AudioContext = window.AudioContext || window.webkitAudioContext;
+                if (AudioContext) {
+                    log('✅ Web Audio API รองรับ');
+                } else {
+                    log('❌ Web Audio API ไม่รองรับ');
+                }
+            } catch (e) {
+                log('❌ Web Audio API ข้อผิดพลาด: ' + e.message);
+            }
+            
+            // Browser info
+            log(`🌐 เบราว์เซอร์: ${navigator.userAgent}`);
+        }
+
+        function initAudio() {
+            log('🎵 เริ่มต้นระบบเสียง...');
+            
+            try {
+                const AudioContext = window.AudioContext || window.webkitAudioContext;
+                audioContext = new AudioContext();
+                
+                // Resume context if suspended
+                if (audioContext.state === 'suspended') {
+                    audioContext.resume().then(() => {
+                        log('🔊 Audio Context กลับมาทำงาน');
+                        showStatus('ระบบเสียงพร้อมใช้งาน', 'success');
+                    });
+                } else {
+                    log('🔊 Audio Context พร้อมใช้งาน');
+                    showStatus('ระบบเสียงพร้อมใช้งาน', 'success');
+                }
+                
+            } catch (e) {
+                log('❌ ไม่สามารถเริ่ม Audio Context: ' + e.message);
+                showStatus('ไม่สามารถเริ่มระบบเสียงได้', 'error');
+            }
+        }
+
+        function loadVoices() {
+            log('🗣️ โหลดเสียง...');
+            
+            function getVoices() {
+                const voices = speechSynthesis.getVoices();
+                log(`📝 พบเสียง ${voices.length} เสียง`);
+                
+                if (voices.length === 0) {
+                    log('⚠️ ไม่พบเสียง รอเสียงโหลด...');
+                    return false;
+                }
+                
+                // Find Thai voice
+                selectedVoice = voices.find(v => v.lang.includes('th')) ||
+                              voices.find(v => v.lang.includes('TH')) ||
+                              voices.find(v => v.name.includes('Thai')) ||
+                              voices.find(v => v.name.includes('กันยา')) ||
+                              voices.find(v => v.lang.includes('en')) ||
+                              voices[0];
+                
+                if (selectedVoice) {
+                    log(`✅ เลือกเสียง: ${selectedVoice.name} (${selectedVoice.lang})`);
+                    showStatus(`เสียง: ${selectedVoice.name}`, 'success');
+                } else {
+                    log('❌ ไม่พบเสียงที่เหมาะสม');
+                    showStatus('ไม่พบเสียงที่เหมาะสม', 'warning');
+                }
+                
+                return true;
+            }
+            
+            // Try to get voices immediately
+            if (!getVoices()) {
+                // Wait for voices to load
+                speechSynthesis.addEventListener('voiceschanged', function() {
+                    log('🔄 เสียงอัพเดท');
+                    getVoices();
+                });
+                
+                // Fallback: force voice loading
+                setTimeout(() => {
+                    if (!selectedVoice) {
+                        log('⚡ บังคับโหลดเสียง...');
+                        speechSynthesis.speak(new SpeechSynthesisUtterance(''));
+                        setTimeout(getVoices, 100);
+                    }
+                }, 2000);
+            }
+        }
+
+        function listVoices() {
+            const voices = speechSynthesis.getVoices();
+            const voiceListEl = document.getElementById('voiceList');
+            
+            if (voices.length === 0) {
+                voiceListEl.innerHTML = 'ไม่พบเสียง';
+                voiceListEl.style.display = 'block';
+                return;
+            }
+            
+            let html = '<h4>เสียงที่มีทั้งหมด:</h4>';
+            voices.forEach((voice, index) => {
+                const isSelected = voice === selectedVoice ? ' ⭐' : '';
+                html += `<div>${index + 1}. ${voice.name} (${voice.lang})${isSelected}</div>`;
+            });
+            
+            voiceListEl.innerHTML = html;
+            voiceListEl.style.display = 'block';
+            
+            setTimeout(() => {
+                voiceListEl.style.display = 'none';
+            }, 5000);
+        }
+
+        function playBeep() {
+            return new Promise((resolve) => {
+                if (!enableBeep) {
+                    resolve();
+                    return;
+                }
+                
+                if (!audioContext) {
+                    log('❌ Audio Context ไม่พร้อม');
+                    resolve();
+                    return;
+                }
+                
+                try {
+                    log('🔔 เล่นเสียง Beep...');
+                    
+                    const oscillator = audioContext.createOscillator();
+                    const gainNode = audioContext.createGain();
+                    
+                    oscillator.connect(gainNode);
+                    gainNode.connect(audioContext.destination);
+                    
+                    // Beep sound settings
+                    oscillator.frequency.setValueAtTime(800, audioContext.currentTime);
+                    oscillator.type = 'sine';
+                    
+                    // Volume envelope
+                    gainNode.gain.setValueAtTime(0, audioContext.currentTime);
+                    gainNode.gain.linearRampToValueAtTime(volume * 0.3, audioContext.currentTime + 0.05);
+                    gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.3);
+                    
+                    oscillator.start(audioContext.currentTime);
+                    oscillator.stop(audioContext.currentTime + 0.3);
+                    
+                    oscillator.onended = () => {
+                        log('✅ Beep เล่นเสร็จ');
+                        resolve();
+                    };
+                    
+                } catch (e) {
+                    log('❌ เล่น Beep ไม่ได้: ' + e.message);
+                    resolve();
+                }
+            });
+        }
+
+        function speak(text) {
+            return new Promise((resolve) => {
+                if (!enableVoice) {
+                    resolve();
+                    return;
+                }
+                
+                if (!selectedVoice) {
+                    log('❌ ไม่มีเสียงสำหรับพูด');
+                    showStatus('ไม่มีเสียงสำหรับพูด', 'error');
+                    resolve();
+                    return;
+                }
+                
+                try {
+                    log(`🗣️ พูด: "${text}"`);
+                    
+                    // Cancel any ongoing speech
+                    speechSynthesis.cancel();
+                    
+                    const utterance = new SpeechSynthesisUtterance(text);
+                    utterance.voice = selectedVoice;
+                    utterance.volume = volume;
+                    utterance.rate = 0.8;
+                    utterance.pitch = 1.0;
+                    
+                    // Try different languages
+                    utterance.lang = selectedVoice.lang || 'th-TH';
+                    
+                    utterance.onstart = () => {
+                        log('🎙️ เริ่มพูด');
+                        showStatus(`กำลังพูด: ${text}`, 'info');
+                    };
+                    
+                    utterance.onend = () => {
+                        log('✅ พูดเสร็จ');
+                        showStatus('พูดเสร็จแล้ว', 'success');
+                        resolve();
+                    };
+                    
+                    utterance.onerror = (event) => {
+                        log(`❌ ข้อผิดพลาดในการพูด: ${event.error}`);
+                        showStatus(`ข้อผิดพลาด: ${event.error}`, 'error');
+                        resolve();
+                    };
+                    
+                    // Speak
+                    speechSynthesis.speak(utterance);
+                    
+                    // Fallback timeout
+                    setTimeout(() => {
+                        if (speechSynthesis.speaking) {
+                            log('⏰ หมดเวลา หยุดการพูด');
+                            speechSynthesis.cancel();
+                            resolve();
+                        }
+                    }, 10000);
+                    
+                } catch (e) {
+                    log('❌ พูดไม่ได้: ' + e.message);
+                    showStatus('ไม่สามารถพูดได้', 'error');
+                    resolve();
+                }
+            });
+        }
+
+        async function testBeep() {
+            if (isPlaying) return;
+            
+            isPlaying = true;
+            setButtonsEnabled(false);
+            
+            if (!audioContext) {
+                initAudio();
+                await new Promise(resolve => setTimeout(resolve, 200));
+            }
+            
+            showStatus('ทดสอบเสียง Beep...', 'info');
+            await playBeep();
+            
+            isPlaying = false;
+            setButtonsEnabled(true);
+        }
+
+        async function testVoice() {
+            if (isPlaying) return;
+            
+            isPlaying = true;
+            setButtonsEnabled(false);
+            
+            showStatus('ทดสอบการพูด...', 'info');
+            await speak('ทดสอบระบบเสียง หนึ่ง สอง สาม');
+            
+            isPlaying = false;
+            setButtonsEnabled(true);
+        }
+
+        async function callQueue() {
+            const queueNumber = document.getElementById('queueInput').value.trim();
+            
+            if (!queueNumber) {
+                showStatus('กรุณาใส่หมายเลขคิว', 'error');
+                return;
+            }
+            
+            if (isPlaying) {
+                showStatus('กำลังเรียกคิวอยู่', 'warning');
+                return;
+            }
+            
+            try {
+                isPlaying = true;
+                setButtonsEnabled(false);
+                
+                // Update display
+                document.getElementById('queueDisplay').textContent = queueNumber;
+                
+                log(`📢 เรียกคิว ${queueNumber}`);
+                showStatus(`เรียกคิู ${queueNumber}...`, 'info');
+                
+                // Initialize audio if needed
+                if (!audioContext) {
+                    initAudio();
+                    await new Promise(resolve => setTimeout(resolve, 200));
+                }
+                
+                // Play beep
+                if (enableBeep) {
+                    await playBeep();
+                    await new Promise(resolve => setTimeout(resolve, 300));
+                }
+                
+                // Speak
+                if (enableVoice) {
+                    const message = `คิวที่ ${queueNumber} กรุณามารับออเดอร์ที่เคาน์เตอร์ครับ`;
+                    await speak(message);
+                }
+                
+                showStatus(`เรียกคิว ${queueNumber} เรียบร้อย!`, 'success');
+                log(`✅ เรียกคิว ${queueNumber} สำเร็จ`);
+                
+                // Auto increment
+                const nextQueue = parseInt(queueNumber) + 1;
+                document.getElementById('queueInput').value = nextQueue;
+                
+            } catch (error) {
+                log(`❌ เรียกคิวล้มเหลว: ${error.message}`);
+                showStatus('เกิดข้อผิดพลาด', 'error');
+            } finally {
+                setTimeout(() => {
+                    isPlaying = false;
+                    setButtonsEnabled(true);
+                }, 1000);
+            }
+        }
+
+        function stopAll() {
+            log('⏹️ หยุดทุกอย่าง');
+            speechSynthesis.cancel();
+            isPlaying = false;
+            setButtonsEnabled(true);
+            showStatus('หยุดการทำงาน', 'info');
+        }
+
+        function setButtonsEnabled(enabled) {
+            const buttons = document.querySelectorAll('button');
+            buttons.forEach(btn => btn.disabled = !enabled);
+        }
+
+        function updateVolume() {
+            const slider = document.getElementById('volumeSlider');
+            volume = slider.value / 100;
+            document.getElementById('volumeDisplay').textContent = Math.round(volume * 100) + '%';
+            log(`🔊 ปรับระดับเสียง: ${Math.round(volume * 100)}%`);
+        }
+
+        function toggleBeep() {
+            enableBeep = document.getElementById('enableBeep').checked;
+            log(`🔔 เสียงแจ้งเตือน: ${enableBeep ? 'เปิด' : 'ปิด'}`);
+        }
+
+        function toggleVoice() {
+            enableVoice = document.getElementById('enableVoice').checked;
+            log(`🗣️ เสียงประกาศ: ${enableVoice ? 'เปิด' : 'ปิด'}`);
+        }
+
+        // Keyboard shortcuts
+        document.addEventListener('keydown', (e) => {
+            if (e.target.tagName !== 'INPUT') {
+                if (e.code === 'Space') {
+                    e.preventDefault();
+                    callQueue();
+                }
+                if (e.key === 'Escape') {
+                    stopAll();
+                }
+                if (e.key === 'Enter') {
+                    callQueue();
+                }
+            }
+        });
+
+        // Enter in input
+        document.getElementById('queueInput').addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') {
+                callQueue();
+            }
+        });
+
+        // Auto-focus input
+        document.getElementById('queueInput').focus();
+    </script>
+</body>
+</html>

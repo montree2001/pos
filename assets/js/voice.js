@@ -210,7 +210,7 @@ class AIVoiceSystem {
     // อัปเดตรายการคิวทั้งหมด
     async updateQueueList() {
         try {
-            const response = await fetch('/pos/api/get_queue_status.php');
+            const response = await fetch('api/get_queue_status.php');
             const data = await response.json();
             
             if (data.success) {
@@ -280,7 +280,7 @@ class AIVoiceSystem {
     // มาร์คคิวเป็นเสร็จสิ้น
     async markAsCompleted(orderId) {
         try {
-            const response = await fetch('/pos/api/update_queue_status.php', {
+            const response = await fetch('api/update_queue_status.php', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -311,7 +311,7 @@ class AIVoiceSystem {
     // ส่งแจ้งเตือนผ่าน LINE
     async sendLineNotification(queueData) {
         try {
-            const response = await fetch('/pos/api/send_line_notification.php', {
+            const response = await fetch('api/send_line_notification.php', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -347,7 +347,7 @@ class AIVoiceSystem {
         if (!this.settings.autoAnnounce) return;
         
         try {
-            const response = await fetch('/pos/api/get_new_queues.php');
+            const response = await fetch('api/get_new_queues.php');
             const data = await response.json();
             
             if (data.success && data.newQueues.length > 0) {

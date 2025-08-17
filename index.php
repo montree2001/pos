@@ -442,6 +442,9 @@ $pageTitle = 'หน้าหลัก';
                 <div class="text-center mt-5">
                     <h5 class="mb-3">การดำเนินการด่วน</h5>
                     <div class="btn-group" role="group">
+                        <a href="queue_caller.php" class="btn btn-success">
+                            <i class="fas fa-bullhorn me-2"></i>เรียกคิว
+                        </a>
                         <a href="admin/system_check.php" class="btn btn-outline-primary">
                             <i class="fas fa-stethoscope me-2"></i>ตรวจสอบระบบ
                         </a>

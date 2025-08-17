@@ -1,0 +1,574 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ทดสอบเสียงพูด - เฉพาะ Speech Synthesis</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            text-align: center;
+            padding: 20px;
+            margin: 0;
+            min-height: 100vh;
+        }
+        
+        .container {
+            background: rgba(255, 255, 255, 0.95);
+            color: #333;
+            padding: 30px;
+            border-radius: 20px;
+            max-width: 700px;
+            margin: 0 auto;
+            box-shadow: 0 15px 35px rgba(0,0,0,0.2);
+        }
+        
+        h1 {
+            color: #e74c3c;
+            margin-bottom: 30px;
+        }
+        
+        .test-area {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 15px;
+            margin: 20px 0;
+            border: 2px solid #dee2e6;
+        }
+        
+        button {
+            font-size: 1.1rem;
+            padding: 12px 25px;
+            background: #007bff;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            margin: 5px;
+            transition: all 0.3s;
+        }
+        
+        button:hover {
+            background: #0056b3;
+            transform: translateY(-2px);
+        }
+        
+        button:disabled {
+            background: #6c757d;
+            cursor: not-allowed;
+            transform: none;
+        }
+        
+        .success { background: #28a745; }
+        .danger { background: #dc3545; }
+        .warning { background: #ffc107; color: #212529; }
+        
+        textarea {
+            width: 100%;
+            height: 100px;
+            padding: 10px;
+            border: 2px solid #dee2e6;
+            border-radius: 8px;
+            font-size: 14px;
+            resize: vertical;
+            font-family: Arial, sans-serif;
+        }
+        
+        .status {
+            padding: 15px;
+            border-radius: 10px;
+            margin: 15px 0;
+            font-weight: bold;
+        }
+        
+        .status.success { background: #d4edda; color: #155724; }
+        .status.error { background: #f8d7da; color: #721c24; }
+        .status.warning { background: #fff3cd; color: #856404; }
+        .status.info { background: #d1ecf1; color: #0c5460; }
+        
+        .voice-selector {
+            margin: 15px 0;
+        }
+        
+        select {
+            padding: 8px 12px;
+            border: 2px solid #dee2e6;
+            border-radius: 6px;
+            font-size: 14px;
+            min-width: 200px;
+        }
+        
+        .controls {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 10px;
+            margin: 20px 0;
+        }
+        
+        .slider-group {
+            margin: 15px 0;
+        }
+        
+        .slider-group label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+        }
+        
+        input[type="range"] {
+            width: 100%;
+            margin: 5px 0;
+        }
+        
+        .debug {
+            background: #f8f9fa;
+            border: 1px solid #dee2e6;
+            border-radius: 8px;
+            padding: 15px;
+            margin: 20px 0;
+            text-align: left;
+            font-family: monospace;
+            font-size: 12px;
+            max-height: 200px;
+            overflow-y: auto;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🗣️ ทดสอบเสียงพูด Speech Synthesis</h1>
+        
+        <div class="test-area">
+            <h3>ข้อความสำหรับทดสอบ</h3>
+            <textarea id="testText" placeholder="ใส่ข้อความที่ต้องการทดสอบ...">คิวที่ 1 กรุณามารับออเดอร์ที่เคาน์เตอร์ครับ</textarea>
+            
+            <div class="voice-selector">
+                <label for="voiceSelect"><strong>เลือกเสียง:</strong></label>
+                <select id="voiceSelect">
+                    <option value="">กำลังโหลดเสียง...</option>
+                </select>
+            </div>
+        </div>
+        
+        <div class="controls">
+            <button onclick="initializeSpeech()" class="success">🚀 เริ่มต้นระบบ</button>
+            <button onclick="speakText()" class="primary">🎤 พูดข้อความ</button>
+            <button onclick="testThai()">🇹🇭 ทดสอบไทย</button>
+            <button onclick="testEnglish()">🇺🇸 ทดสอบอังกฤษ</button>
+        </div>
+        
+        <div class="controls">
+            <button onclick="loadVoicesForce()">🔄 โหลดเสียงใหม่</button>
+            <button onclick="testAllVoices()">🎭 ทดสอบทุกเสียง</button>
+            <button onclick="stopSpeaking()" class="danger">⏹️ หยุดพูด</button>
+            <button onclick="clearLog()">🗑️ เคลียร์ Log</button>
+        </div>
+        
+        <div class="test-area">
+            <h4>การควบคุมเสียง</h4>
+            
+            <div class="slider-group">
+                <label for="volumeSlider">ระดับเสียง: <span id="volumeValue">100%</span></label>
+                <input type="range" id="volumeSlider" min="0" max="100" value="100" oninput="updateVolume()">
+            </div>
+            
+            <div class="slider-group">
+                <label for="rateSlider">ความเร็ว: <span id="rateValue">1.0x</span></label>
+                <input type="range" id="rateSlider" min="0.1" max="2.0" step="0.1" value="1.0" oninput="updateRate()">
+            </div>
+            
+            <div class="slider-group">
+                <label for="pitchSlider">ระดับเสียง: <span id="pitchValue">1.0</span></label>
+                <input type="range" id="pitchSlider" min="0.5" max="2.0" step="0.1" value="1.0" oninput="updatePitch()">
+            </div>
+        </div>
+        
+        <div id="status" class="status info">พร้อมเริ่มทดสอบ - กรุณากด "เริ่มต้นระบบ"</div>
+        
+        <div id="debug" class="debug">
+            === LOG ===<br>
+            รอการเริ่มต้น...
+        </div>
+    </div>
+
+    <script>
+        // Global variables
+        let speechSynth = window.speechSynthesis;
+        let voices = [];
+        let selectedVoice = null;
+        let isInitialized = false;
+        let currentUtterance = null;
+        
+        // Settings
+        let volume = 1.0;
+        let rate = 1.0;
+        let pitch = 1.0;
+        
+        // Debug
+        let logs = [];
+
+        function log(message) {
+            const timestamp = new Date().toLocaleTimeString();
+            const logEntry = `[${timestamp}] ${message}`;
+            logs.push(logEntry);
+            
+            if (logs.length > 30) {
+                logs = logs.slice(-30);
+            }
+            
+            document.getElementById('debug').innerHTML = 
+                '=== LOG ===<br>' + logs.join('<br>');
+            
+            console.log(logEntry);
+        }
+
+        function showStatus(message, type = 'info') {
+            const statusEl = document.getElementById('status');
+            statusEl.textContent = message;
+            statusEl.className = `status ${type}`;
+            log(`STATUS [${type}]: ${message}`);
+        }
+
+        // Initialize on page load
+        document.addEventListener('DOMContentLoaded', function() {
+            log('หน้าเว็บโหลดเสร็จ');
+            showStatus('พร้อมเริ่มทดสอบ - กรุณากด "เริ่มต้นระบบ"', 'info');
+            
+            // Try to load voices immediately
+            setTimeout(loadVoicesForce, 500);
+        });
+
+        function initializeSpeech() {
+            log('เริ่มต้นระบบ Speech Synthesis');
+            showStatus('กำลังเริ่มต้นระบบ...', 'info');
+            
+            try {
+                // Check browser support
+                if (!('speechSynthesis' in window)) {
+                    throw new Error('เบราว์เซอร์ไม่รองรับ Speech Synthesis');
+                }
+                
+                log('✅ เบราว์เซอร์รองรับ Speech Synthesis');
+                
+                // Cancel any ongoing speech
+                speechSynth.cancel();
+                log('หยุดการพูดที่มีอยู่');
+                
+                // Force wake up
+                const wakeUp = new SpeechSynthesisUtterance('');
+                speechSynth.speak(wakeUp);
+                speechSynth.cancel();
+                log('ปลุกระบบ Speech Synthesis');
+                
+                // Load voices
+                loadVoicesForce();
+                
+                isInitialized = true;
+                showStatus('ระบบพร้อมใช้งาน!', 'success');
+                log('✅ ระบบเริ่มต้นเสร็จสิ้น');
+                
+            } catch (error) {
+                log('❌ ข้อผิดพลาด: ' + error.message);
+                showStatus('ข้อผิดพลาด: ' + error.message, 'error');
+            }
+        }
+
+        function loadVoicesForce() {
+            log('กำลังโหลดเสียง...');
+            
+            function getVoices() {
+                voices = speechSynth.getVoices();
+                log(`พบเสียง ${voices.length} เสียง`);
+                
+                if (voices.length === 0) {
+                    log('ไม่พบเสียง - รอ...');
+                    return false;
+                }
+                
+                // Update voice selector
+                updateVoiceSelector();
+                
+                // Select best voice
+                selectBestVoice();
+                
+                return true;
+            }
+            
+            // Try immediately
+            if (!getVoices()) {
+                // Listen for voices changed
+                speechSynth.addEventListener('voiceschanged', () => {
+                    log('เสียงเปลี่ยนแปลง');
+                    getVoices();
+                });
+                
+                // Force load voices
+                setTimeout(() => {
+                    log('บังคับโหลดเสียง...');
+                    speechSynth.speak(new SpeechSynthesisUtterance(''));
+                    speechSynth.cancel();
+                    setTimeout(getVoices, 100);
+                }, 1000);
+            }
+        }
+
+        function updateVoiceSelector() {
+            const select = document.getElementById('voiceSelect');
+            select.innerHTML = '';
+            
+            if (voices.length === 0) {
+                select.innerHTML = '<option value="">ไม่พบเสียง</option>';
+                return;
+            }
+            
+            voices.forEach((voice, index) => {
+                const option = document.createElement('option');
+                option.value = index;
+                option.textContent = `${voice.name} (${voice.lang})`;
+                select.appendChild(option);
+            });
+            
+            log(`อัปเดต voice selector: ${voices.length} เสียง`);
+        }
+
+        function selectBestVoice() {
+            if (voices.length === 0) {
+                log('ไม่มีเสียงให้เลือก');
+                return;
+            }
+            
+            // Find Thai voice
+            const thaiVoice = voices.find(voice => 
+                voice.lang.includes('th') || 
+                voice.lang.includes('TH') ||
+                voice.name.includes('Thai') ||
+                voice.name.includes('กันยา')
+            );
+            
+            if (thaiVoice) {
+                selectedVoice = thaiVoice;
+                log(`✅ เลือกเสียงไทย: ${thaiVoice.name}`);
+                
+                // Update selector
+                const voiceIndex = voices.findIndex(v => v === thaiVoice);
+                document.getElementById('voiceSelect').value = voiceIndex;
+            } else {
+                selectedVoice = voices[0];
+                log(`⚠️ ไม่พบเสียงไทย ใช้เสียงแรก: ${voices[0].name}`);
+                document.getElementById('voiceSelect').value = 0;
+            }
+        }
+
+        // Voice selector change
+        document.getElementById('voiceSelect').addEventListener('change', function() {
+            const index = parseInt(this.value);
+            if (index >= 0 && index < voices.length) {
+                selectedVoice = voices[index];
+                log(`เปลี่ยนเสียงเป็น: ${selectedVoice.name}`);
+            }
+        });
+
+        function speakText() {
+            const text = document.getElementById('testText').value.trim();
+            
+            if (!text) {
+                showStatus('กรุณาใส่ข้อความ', 'warning');
+                return;
+            }
+            
+            if (!isInitialized) {
+                showStatus('กรุณาเริ่มต้นระบบก่อน', 'warning');
+                return;
+            }
+            
+            speak(text);
+        }
+
+        function speak(text, lang = 'th-TH') {
+            log(`🗣️ พูด: "${text}"`);
+            showStatus(`กำลังพูด: ${text.substring(0, 30)}...`, 'info');
+            
+            try {
+                // Cancel any ongoing speech
+                speechSynth.cancel();
+                
+                // Wait a bit after cancel
+                setTimeout(() => {
+                    const utterance = new SpeechSynthesisUtterance(text);
+                    
+                    // Set voice
+                    if (selectedVoice) {
+                        utterance.voice = selectedVoice;
+                        log(`ใช้เสียง: ${selectedVoice.name}`);
+                    } else {
+                        log('⚠️ ไม่มีเสียงที่เลือก');
+                    }
+                    
+                    // Set properties
+                    utterance.volume = volume;
+                    utterance.rate = rate;
+                    utterance.pitch = pitch;
+                    utterance.lang = lang;
+                    
+                    log(`การตั้งค่า: volume=${volume}, rate=${rate}, pitch=${pitch}, lang=${lang}`);
+                    
+                    // Event listeners
+                    utterance.onstart = () => {
+                        log('✅ เริ่มพูด');
+                        showStatus('กำลังพูด...', 'info');
+                    };
+                    
+                    utterance.onend = () => {
+                        log('✅ พูดเสร็จ');
+                        showStatus('พูดเสร็จแล้ว', 'success');
+                        currentUtterance = null;
+                    };
+                    
+                    utterance.onerror = (event) => {
+                        log(`❌ ข้อผิดพลาด: ${event.error}`);
+                        showStatus(`ข้อผิดพลาด: ${event.error}`, 'error');
+                        currentUtterance = null;
+                    };
+                    
+                    utterance.onpause = () => {
+                        log('⏸️ หยุดชั่วคราว');
+                    };
+                    
+                    utterance.onresume = () => {
+                        log('▶️ เล่นต่อ');
+                    };
+                    
+                    // Start speaking
+                    currentUtterance = utterance;
+                    speechSynth.speak(utterance);
+                    log('เริ่มการพูด...');
+                    
+                    // Timeout fallback
+                    setTimeout(() => {
+                        if (currentUtterance && !speechSynth.speaking) {
+                            log('⏰ หมดเวลา - หยุดการพูด');
+                            speechSynth.cancel();
+                            showStatus('หมดเวลา', 'warning');
+                            currentUtterance = null;
+                        }
+                    }, 20000);
+                    
+                }, 100);
+                
+            } catch (error) {
+                log(`❌ ไม่สามารถพูดได้: ${error.message}`);
+                showStatus(`ไม่สามารถพูดได้: ${error.message}`, 'error');
+            }
+        }
+
+        function testThai() {
+            speak('สวัสดีครับ ทดสอบเสียงภาษาไทย คิวที่หนึ่ง กรุณามารับออเดอร์', 'th-TH');
+        }
+
+        function testEnglish() {
+            speak('Hello, this is an English test. Queue number one, please come to the counter.', 'en-US');
+        }
+
+        function testAllVoices() {
+            if (voices.length === 0) {
+                showStatus('ไม่มีเสียงให้ทดสอบ', 'error');
+                return;
+            }
+            
+            log('ทดสอบเสียงทั้งหมด...');
+            showStatus('กำลังทดสอบเสียงทั้งหมด...', 'info');
+            
+            let currentIndex = 0;
+            
+            function testNext() {
+                if (currentIndex >= voices.length) {
+                    log('✅ ทดสอบเสียงทั้งหมดเสร็จ');
+                    showStatus('ทดสอบเสียงทั้งหมดเสร็จ', 'success');
+                    return;
+                }
+                
+                const voice = voices[currentIndex];
+                selectedVoice = voice;
+                document.getElementById('voiceSelect').value = currentIndex;
+                
+                log(`ทดสอบเสียง ${currentIndex + 1}/${voices.length}: ${voice.name}`);
+                
+                const testText = voice.lang.includes('th') ? 
+                    `เสียงที่ ${currentIndex + 1} ${voice.name}` :
+                    `Voice ${currentIndex + 1} ${voice.name}`;
+                
+                const utterance = new SpeechSynthesisUtterance(testText);
+                utterance.voice = voice;
+                utterance.volume = volume;
+                utterance.rate = rate;
+                utterance.pitch = pitch;
+                
+                utterance.onend = () => {
+                    currentIndex++;
+                    setTimeout(testNext, 1000);
+                };
+                
+                utterance.onerror = () => {
+                    log(`❌ เสียง ${voice.name} ใช้งานไม่ได้`);
+                    currentIndex++;
+                    setTimeout(testNext, 500);
+                };
+                
+                speechSynth.speak(utterance);
+            }
+            
+            testNext();
+        }
+
+        function stopSpeaking() {
+            log('⏹️ หยุดการพูด');
+            speechSynth.cancel();
+            currentUtterance = null;
+            showStatus('หยุดการพูดแล้ว', 'info');
+        }
+
+        function clearLog() {
+            logs = [];
+            document.getElementById('debug').innerHTML = '=== LOG ===<br>Log ถูกล้างแล้ว';
+            log('Log ถูกล้างแล้ว');
+        }
+
+        // Slider controls
+        function updateVolume() {
+            const slider = document.getElementById('volumeSlider');
+            volume = slider.value / 100;
+            document.getElementById('volumeValue').textContent = Math.round(volume * 100) + '%';
+            log(`เปลี่ยนระดับเสียง: ${Math.round(volume * 100)}%`);
+        }
+
+        function updateRate() {
+            const slider = document.getElementById('rateSlider');
+            rate = parseFloat(slider.value);
+            document.getElementById('rateValue').textContent = rate + 'x';
+            log(`เปลี่ยนความเร็ว: ${rate}x`);
+        }
+
+        function updatePitch() {
+            const slider = document.getElementById('pitchSlider');
+            pitch = parseFloat(slider.value);
+            document.getElementById('pitchValue').textContent = pitch;
+            log(`เปลี่ยนระดับเสียง: ${pitch}`);
+        }
+
+        // Keyboard shortcuts
+        document.addEventListener('keydown', (e) => {
+            if (e.target.tagName !== 'TEXTAREA' && e.target.tagName !== 'INPUT') {
+                if (e.code === 'Space') {
+                    e.preventDefault();
+                    speakText();
+                }
+                if (e.key === 'Escape') {
+                    stopSpeaking();
+                }
+            }
+        });
+    </script>
+</body>
+</html>
